@@ -1,17 +1,35 @@
-/**
- * @format
- */
-
 import 'react-native';
 import React from 'react';
-import App from '../src/App';
+import { describe, it, expect, jest } from '@jest/globals';
+import { fireEvent, waitFor } from '@testing-library/react-native';
+import { renderWithProviders } from '../utils/test-utils';
+import { NavigationContainer } from '@react-navigation/native';
 
-// Note: import explicitly to use the types shiped with jest.
-import {it} from '@jest/globals';
+import AppStack from '../src/app-stack';
 
-// Note: test renderer must be required after react-native.
-import renderer from 'react-test-renderer';
+import { Home } from '../src/screens/home';
 
-it('renders correctly', () => {
-  renderer.create(<App />);
+describe('Home Screen', () => {
+  it('Renders properly with 0 ml', () => {
+    const { getByText } = renderWithProviders(<Home />);
+    const result = getByText("0 ml");
+    expect(result).toBeDefined();
+  });
+
+  it('Renders properly with 300 ml', () => {
+    const { getByText } = renderWithProviders(<Home />, { preloadedState: { daylyConsumption: { currentConsumtionMl: 300, desiredDailyConsumption: 3000 } } });
+    const result = getByText("300 ml");
+    expect(result).toBeDefined();
+  });
+});
+
+describe('App Stack', () => {
+  it('renders the correct screen', async () => {
+    const { getByText } = renderWithProviders(
+      <NavigationContainer>
+        <AppStack />
+      </NavigationContainer>
+    );
+    await waitFor(() => getByText('Home'));
+  });
 });

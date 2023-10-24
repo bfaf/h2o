@@ -21,7 +21,8 @@ export const Home = (): JSX.Element => {
     return (
         <SafeAreaView>
             <View style={styles.container}>
-                <Text><FontAwesome6 name={'comments'} solid /> {currentConsumtionMl} ml</Text>
+                <FontAwesome6 name={'comments'} solid />
+                <Text>{currentConsumtionMl} ml</Text>
             </View>
         </SafeAreaView>
     );
