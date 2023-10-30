@@ -1,6 +1,6 @@
 import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { fetchSettingDesiredDailyConsumption, setSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar } from "../thunks/dailyConsumption";
+import { fetchSettingDesiredDailyConsumption, setSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData } from "../thunks/dailyConsumption";
 
 interface DailyConsumptionState {
   currentConsumtionMl: number;
@@ -54,6 +54,13 @@ const daylyConsumptionSlice = createSlice({
     })
     .addCase(addWaterLevelSoFar.fulfilled, (state, action) => {
       state.waterLevel = action.payload;
+    })
+    .addCase(resetDailyData.fulfilled, (state, action) => {
+      state.desiredDailyConsumption = action.payload;
+      state.waterLevel = 200;
+      state.currentConsumtionMl = 0;
+      state.coffeesConsumed = 0;
+      state.glassesOfWaterConsumed = 0;
     })
   },
 });

@@ -2,21 +2,26 @@
  * @format
  */
 
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, SafeAreaView, View, Text, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, SafeAreaView, View, Text, Image, Platform, AppState } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../stores/redux/store';
+import { AppDispatch } from '../../stores/redux/store';
 import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
 import { FAB, Portal, Icon } from 'react-native-paper';
 import WaterLevelContainer from './waterLevelContainer';
 
 import MaskedView from '@react-native-masked-view/masked-view';
-import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar } from '../../stores/redux/thunks/dailyConsumption';
+import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar, resetDailyData } from '../../stores/redux/thunks/dailyConsumption';
+import { currentDateSelector, fetchCurrentDate } from '../../stores/redux/slices/currentDateSlice';
+import { getCurrentDate } from '../../utils/date';
 
 export const Home = (): JSX.Element => {
     const dispatch: AppDispatch = useDispatch();
     const [openLiquids, setOpenLiquids] = useState<boolean>(false);
     const { currentConsumtionMl, desiredDailyConsumption, waterLevel, coffeesConsumed } = useSelector(daylyConsumption);
+    const { currentDate } = useSelector(currentDateSelector);
+    const appState = useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
     useEffect(() => {
         const initValues = async () => {
@@ -25,6 +30,7 @@ export const Home = (): JSX.Element => {
                 await dispatch(fetchWaterConsumptionSoFar());
                 await dispatch(fetchWaterLevelSoFar());
                 await dispatch(fetchCoffeesConsumedSoFar());
+                await dispatch(fetchCurrentDate());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);
@@ -32,6 +38,21 @@ export const Home = (): JSX.Element => {
         };
         initValues();
     }, []);
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+          if (nextAppState === 'active') {
+            const today = getCurrentDate();
+            if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
+                dispatch(resetDailyData());
+            }
+          }
+        });
+    
+        return () => {
+          subscription.remove();
+        };
+      }, [currentDate]);
 
     const calculateIncrease = (value: number) => {
         const totalHeight = 200;
@@ -44,6 +65,29 @@ export const Home = (): JSX.Element => {
         dispatch(addWaterLevelSoFar(waterLevel - calculated));
     }
 
+    const renderMaskedView = (waterLevel: number) => {
+        const isIOS = Platform.OS === 'ios';
+        if (isIOS) {
+            return (
+                <MaskedView
+                    key="maskedView"
+                    style={styles.maskedView}
+                    maskElement={<WaterLevelContainer increse={waterLevel} />} >
+                        <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
+                </MaskedView>
+            );
+        } else {
+            return (<MaskedView
+                    key="maskedView"
+                    style={styles.maskedView}
+                    androidRenderingMode='software'
+                    maskElement={<WaterLevelContainer increse={waterLevel} />} >
+                        <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
+                </MaskedView>
+            );
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.dailyLimit}>
@@ -53,13 +97,7 @@ export const Home = (): JSX.Element => {
             </View>
             <View style={styles.maskView}>
                 <Image key="top" source={require('../../images/human-200.png')} style={styles.image} />
-                <MaskedView
-                    key="maskedView"
-                    style={styles.maskedView}
-                    androidRenderingMode='software'
-                    maskElement={<WaterLevelContainer increse={waterLevel} />} >
-                        <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
-                </MaskedView>
+                {renderMaskedView(waterLevel)}
             </View>
             <View style={styles.consumedSoFarView}>
                 <Text style={styles.dailyLimitText}>{currentConsumtionMl} ml</Text>

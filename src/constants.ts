@@ -7,4 +7,4 @@ export const STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE = 'desiredDailyWithCoffeeCo
 export const STORE_KEY_COFFEES_CONSUMPTION = 'coffeesConsumed';
 export const STORE_KEY_GLASSES_OF_WATER_CONSUMED = 'glassesOfWaterConsumed';
 export const STORE_KEY_WATER_LEVEL_SO_FAR = 'waterLevelSoFar';
-
+export const STORE_KEY_CURRENT_DATE = 'currentDate';

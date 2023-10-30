@@ -1,7 +1,31 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED, STORE_KEY_GLASSES_OF_WATER_CONSUMED } from "../../../../constants";
+import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
+
+export const resetDailyData = createAsyncThunk(
+    'daylyConsumption/resetValue',
+    async (thunkAPI, { rejectWithValue }) => {
+      try {
+        let value = await AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION);
+        if (value != null) {
+            await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + value);
+        } else {
+            value = '' + DEFAULT_DAILY_CONSUMPTION;
+            await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + DEFAULT_DAILY_CONSUMPTION);
+        }
+        
+        await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + 0);
+        await AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, '' + 200);
+        await AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, '' + 0);
+        await AsyncStorage.setItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED, '' + 0);
+
+        return Number(value);
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    }
+  );
 
 export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
     'daylyConsumption/fetchDesiredDailyConsumptionValue',
@@ -12,6 +36,7 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
           return Number(value);
         } else {
           // default value
+          await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, '' + DEFAULT_DAILY_CONSUMPTION);
           await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + DEFAULT_DAILY_CONSUMPTION);
           return DEFAULT_DAILY_CONSUMPTION;
         }
@@ -79,7 +104,7 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
     'daylyConsumption/setDesiredDailyConsumptionValue',
     async (value: number, { rejectWithValue }) => {
       try {
-        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + value);
+        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, '' + value);
         return value;
       } catch (err) {
         return rejectWithValue(err);
