@@ -71,7 +71,7 @@ export const Home = (): JSX.Element => {
                         const hours = time.getHours();
                         const minutes = time.getMinutes();
                         const shouldShow = (hours >= 9 && hours <= 17) && (minutes === 0);
-                        console.log('shouldShow', shouldShow, time.getMinutes());
+                        const shouldSleepLonger = (hours > 17 && minutes >= 1);
                         if (shouldShow) {
                             Notifications.postLocalNotification({
                                 body: 'Reminder to drink water!',
@@ -84,7 +84,13 @@ export const Home = (): JSX.Element => {
                                 thread: '1',
                             }, getRandomInt(1000000));
                         }
-                        await sleep(delay);
+                        if (!shouldSleepLonger) {
+                            await sleep(delay);
+                        } else {
+                            const minute = 60 * 1000;
+                            const hours15 = (15 * 60) * minute; // 15 hours until next day
+                            await sleep(hours15);
+                        }
                     }
                 });
             };
@@ -98,7 +104,7 @@ export const Home = (): JSX.Element => {
                     type: 'mipmap',
                 },
                 color: '#ff00ff',
-                linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
+                linkingURI: 'h2o://Home',
                 parameters: {
                     delay: 60 * 1000,
                 },

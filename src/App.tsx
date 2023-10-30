@@ -12,9 +12,22 @@ import { setupStore } from './stores/redux/store';
 import { PaperProvider } from 'react-native-paper';
 import AppStack from './app-stack';
 
+const linking = {
+  prefixes: [
+    // your linking prefixes 
+    'h2o://'
+  ],
+  config: {
+    // configuration for matching screens with paths 
+    screens: {
+      Home: 'Home',
+    }
+  },
+};
+
 const App = (): JSX.Element => {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <StoreProvider store={setupStore({})}>
         <PaperProvider>
           <AppStack />
