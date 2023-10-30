@@ -12,16 +12,24 @@ import WaterLevelContainer from './waterLevelContainer';
 
 import MaskedView from '@react-native-masked-view/masked-view';
 import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar, resetDailyData } from '../../stores/redux/thunks/dailyConsumption';
-import { currentDateSelector, fetchCurrentDate } from '../../stores/redux/slices/currentDateSlice';
+import { currentDateSelector } from '../../stores/redux/slices/currentDateSlice';
 import { getCurrentDate } from '../../utils/date';
+import { fetchCurrentDate } from '../../stores/redux/thunks/currentDate';
+import BackgroundService from 'react-native-background-actions';
+
+
+import { Notification, Notifications } from 'react-native-notifications';
+
+const getRandomInt = (max: number) => Math.floor(Math.random() * max);
+
+const sleep = (time: number) => new Promise((resolve) => setTimeout(() => resolve(''), time));
+
 
 export const Home = (): JSX.Element => {
     const dispatch: AppDispatch = useDispatch();
     const [openLiquids, setOpenLiquids] = useState<boolean>(false);
     const { currentConsumtionMl, desiredDailyConsumption, waterLevel, coffeesConsumed } = useSelector(daylyConsumption);
     const { currentDate } = useSelector(currentDateSelector);
-    const appState = useRef(AppState.currentState);
-    const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
     useEffect(() => {
         const initValues = async () => {
@@ -40,19 +48,82 @@ export const Home = (): JSX.Element => {
     }, []);
 
     useEffect(() => {
-        const subscription = AppState.addEventListener('change', nextAppState => {
-          if (nextAppState === 'active') {
-            const today = getCurrentDate();
-            if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
-                dispatch(resetDailyData());
-            }
-          }
+        Notifications.registerRemoteNotifications();
+
+        Notifications.events().registerNotificationReceivedForeground((notification: Notification, completion) => {
+            // console.log(`Notification received in foreground: ${notification.title} : ${notification.body}`);
+            completion({ alert: false, sound: false, badge: false });
         });
-    
-        return () => {
-          subscription.remove();
+
+        Notifications.events().registerNotificationOpened((notification: Notification, completion) => {
+            // console.log(`Notification opened: ${notification.payload}`);
+            completion();
+        });
+    }, []);
+
+    useEffect(() => {
+        const task = async () => {
+            const veryIntensiveTask = async (taskDataArguments: any) => {
+                const { delay } = taskDataArguments;
+                await new Promise(async (resolve) => {
+                    while (BackgroundService.isRunning()) {
+                        const time = new Date();
+                        const hours = time.getHours();
+                        const minutes = time.getMinutes();
+                        const shouldShow = (hours >= 9 && hours <= 17) && (minutes === 0);
+                        console.log('shouldShow', shouldShow, time.getMinutes());
+                        if (shouldShow) {
+                            Notifications.postLocalNotification({
+                                body: 'Reminder to drink water!',
+                                title: 'h2o',
+                                sound: '',
+                                type: 'local',
+                                identifier: '',
+                                payload: {},
+                                badge: 0,
+                                thread: '1',
+                            }, getRandomInt(1000000));
+                        }
+                        await sleep(delay);
+                    }
+                });
+            };
+
+            const options = {
+                taskName: 'Reminder',
+                taskTitle: 'Drink water',
+                taskDesc: 'Reminder to drink water!',
+                taskIcon: {
+                    name: 'ic_launcher',
+                    type: 'mipmap',
+                },
+                color: '#ff00ff',
+                linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
+                parameters: {
+                    delay: 60 * 1000,
+                },
+            };
+
+            await BackgroundService.start(veryIntensiveTask, options);
         };
-      }, [currentDate]);
+
+        task();
+    }, []);
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'active') {
+                const today = getCurrentDate();
+                if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
+                    dispatch(resetDailyData());
+                }
+            }
+        });
+
+        return () => {
+            subscription.remove();
+        };
+    }, [currentDate]);
 
     const calculateIncrease = (value: number) => {
         const totalHeight = 200;
@@ -73,17 +144,17 @@ export const Home = (): JSX.Element => {
                     key="maskedView"
                     style={styles.maskedView}
                     maskElement={<WaterLevelContainer increse={waterLevel} />} >
-                        <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
+                    <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
                 </MaskedView>
             );
         } else {
             return (<MaskedView
-                    key="maskedView"
-                    style={styles.maskedView}
-                    androidRenderingMode='software'
-                    maskElement={<WaterLevelContainer increse={waterLevel} />} >
-                        <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
-                </MaskedView>
+                key="maskedView"
+                style={styles.maskedView}
+                androidRenderingMode='software'
+                maskElement={<WaterLevelContainer increse={waterLevel} />} >
+                <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
+            </MaskedView>
             );
         }
     }
@@ -93,7 +164,7 @@ export const Home = (): JSX.Element => {
             <View style={styles.dailyLimit}>
                 <Text style={styles.dailyLimitText}>Daily limit</Text>
                 <Text style={styles.dailyLimitText}>{desiredDailyConsumption} ml</Text>
-                <Text style={styles.dailyLimitTextSmall}>{coffeesConsumed} <Icon source='coffee' size={14}/> included</Text>
+                <Text style={styles.dailyLimitTextSmall}>{coffeesConsumed} <Icon source='coffee' size={14} color='#000'/> included</Text>
             </View>
             <View style={styles.maskView}>
                 <Image key="top" source={require('../../images/human-200.png')} style={styles.image} />
