@@ -1,10 +1,14 @@
 import {
+  AnyAction,
   combineReducers,
   configureStore,
-  PreloadedState
+  Dispatch,
+  PreloadedState,
+  ThunkDispatch
 } from '@reduxjs/toolkit';
 
 import daylyConsumptionReducer from './slices/daylyConsumptionSlice';
+import { AppState } from 'react-native';
 
 const rootReducer = combineReducers({
   daylyConsumption: daylyConsumptionReducer
