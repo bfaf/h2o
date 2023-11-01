@@ -42,9 +42,9 @@ const daylyConsumptionSlice = createSlice({
       state.coffeesConsumed = action.payload;
     })
     .addCase(addCoffeesConsumed.fulfilled, (state, action) => {
-      const { newCoffeeAmount, newWaterAmount, newDesiredWaterConsumption } = action.payload;
+      const { newCoffeeAmount, newDesiredWaterConsumption } = action.payload;
       state.desiredDailyConsumption = newDesiredWaterConsumption;
-      state.currentConsumtionMl = newWaterAmount;
+      // state.currentConsumtionMl = newWaterAmount;
       state.coffeesConsumed = newCoffeeAmount;
     })
     .addCase(addWaterConsumedSoFar.fulfilled, (state, action) => {

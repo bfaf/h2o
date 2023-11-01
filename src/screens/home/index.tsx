@@ -2,34 +2,41 @@
  * @format
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, View, Text, Image, Platform, AppState } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
 import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
-import { FAB, Portal, Icon } from 'react-native-paper';
+import { FAB, Portal, Icon, Button } from 'react-native-paper';
 import WaterLevelContainer from './waterLevelContainer';
+import Notifications from '../../Notifications';
 
 import MaskedView from '@react-native-masked-view/masked-view';
 import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar, resetDailyData } from '../../stores/redux/thunks/dailyConsumption';
 import { currentDateSelector } from '../../stores/redux/slices/currentDateSlice';
-import { getCurrentDate } from '../../utils/date';
-import { fetchCurrentDate } from '../../stores/redux/thunks/currentDate';
-import BackgroundService from 'react-native-background-actions';
+import { getCurrentDate, getCurrentDateForNotifications, getNextDayNotification } from '../../utils/date';
+import { fetchCurrentDate, setCurrentDate } from '../../stores/redux/thunks/currentDate';
 
-
-import { Notification, Notifications } from 'react-native-notifications';
-
-const getRandomInt = (max: number) => Math.floor(Math.random() * max);
-
-const sleep = (time: number) => new Promise((resolve) => setTimeout(() => resolve(''), time));
-
+const getRandomInt = (max: number):number => Math.floor(Math.random() * max);
 
 export const Home = (): JSX.Element => {
     const dispatch: AppDispatch = useDispatch();
     const [openLiquids, setOpenLiquids] = useState<boolean>(false);
     const { currentConsumtionMl, desiredDailyConsumption, waterLevel, coffeesConsumed } = useSelector(daylyConsumption);
     const { currentDate } = useSelector(currentDateSelector);
+
+    const scheduleNotifications = () => {
+        const nnn = getCurrentDateForNotifications();
+        const currentHour = new Date(Date.now()).getHours() + 1;
+        for (let i = currentHour; i < 18; i++) {
+            const hh = i < 10 ? '0' + i : i;
+            console.log(`${nnn}${hh}:00:00`);
+            const date = new Date(Date.parse(`${nnn}${hh}:00:00`));
+            Notifications.scheduleNotification(date);
+        }
+        const nextDayNotif = new Date(Date.parse(getNextDayNotification()));
+        Notifications.scheduleNotification(nextDayNotif);
+    };
 
     useEffect(() => {
         const initValues = async () => {
@@ -48,82 +55,18 @@ export const Home = (): JSX.Element => {
     }, []);
 
     useEffect(() => {
-        Notifications.registerRemoteNotifications();
-
-        Notifications.events().registerNotificationReceivedForeground((notification: Notification, completion) => {
-            // console.log(`Notification received in foreground: ${notification.title} : ${notification.body}`);
-            completion({ alert: false, sound: false, badge: false });
-        });
-
-        Notifications.events().registerNotificationOpened((notification: Notification, completion) => {
-            // console.log(`Notification opened: ${notification.payload}`);
-            completion();
-        });
-    }, []);
-
-    useEffect(() => {
-        const task = async () => {
-            const veryIntensiveTask = async (taskDataArguments: any) => {
-                const { delay } = taskDataArguments;
-                await new Promise(async (resolve) => {
-                    while (BackgroundService.isRunning()) {
-                        const time = new Date();
-                        const hours = time.getHours();
-                        const minutes = time.getMinutes();
-                        const shouldShow = (hours >= 9 && hours <= 17) && (minutes === 0);
-                        const shouldSleepLonger = (hours > 17 && minutes >= 1);
-                        if (shouldShow) {
-                            Notifications.postLocalNotification({
-                                body: 'Reminder to drink water!',
-                                title: 'h2o',
-                                sound: '',
-                                type: 'local',
-                                identifier: '',
-                                payload: {},
-                                badge: 0,
-                                thread: '1',
-                            }, getRandomInt(1000000));
-                        }
-                        if (!shouldSleepLonger) {
-                            await sleep(delay);
-                        } else {
-                            const minute = 60 * 1000;
-                            const hours15 = (15 * 60) * minute; // 15 hours until next day
-                            await sleep(hours15);
-                        }
-                    }
-                });
-            };
-
-            const options = {
-                taskName: 'Reminder',
-                taskTitle: 'Drink water',
-                taskDesc: 'Reminder to drink water!',
-                taskIcon: {
-                    name: 'ic_launcher',
-                    type: 'mipmap',
-                },
-                color: '#ff00ff',
-                linkingURI: 'h2o://Home',
-                parameters: {
-                    delay: 60 * 1000,
-                },
-            };
-
-            await BackgroundService.start(veryIntensiveTask, options);
-        };
-
-        task();
-    }, []);
-
-    useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
-            if (nextAppState === 'active') {
-                const today = getCurrentDate();
-                if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
-                    dispatch(resetDailyData());
-                }
+            const today = getCurrentDate();
+            if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
+                dispatch(setCurrentDate());
+                dispatch(resetDailyData());
+                scheduleNotifications();
+                
+                //Notifications.scheduleNotification(new Date(Date.now() + 5 * 1000));
+                //Notifications.scheduleNotification(new Date(Date.now() + 10 * 1000));
+                //Notifications.scheduleNotification(new Date(Date.now() + 15 * 1000));
             }
+            
         });
 
         return () => {
@@ -157,7 +100,6 @@ export const Home = (): JSX.Element => {
             return (<MaskedView
                 key="maskedView"
                 style={styles.maskedView}
-                androidRenderingMode='software'
                 maskElement={<WaterLevelContainer increse={waterLevel} />} >
                 <Image key="watered" source={require('../../images/human-watered-200.png')} style={styles.mask} />
             </MaskedView>
@@ -170,7 +112,7 @@ export const Home = (): JSX.Element => {
             <View style={styles.dailyLimit}>
                 <Text style={styles.dailyLimitText}>Daily limit</Text>
                 <Text style={styles.dailyLimitText}>{desiredDailyConsumption} ml</Text>
-                <Text style={styles.dailyLimitTextSmall}>{coffeesConsumed} <Icon source='coffee' size={14} color='#000'/> included</Text>
+                <Text style={styles.dailyLimitTextSmall}>{coffeesConsumed} <Icon source='coffee' size={14} color='#000' /> included</Text>
             </View>
             <View style={styles.maskView}>
                 <Image key="top" source={require('../../images/human-200.png')} style={styles.image} />

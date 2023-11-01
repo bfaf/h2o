@@ -116,10 +116,10 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
     'daylyConsumption/addCoffeesConsumedValue',
     async (thunkApi, { rejectWithValue }) => {
       try {
-        const water = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR) || 0;
-        const calculatedWaterAmount = (Number(water) - DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED)
-        const newWaterAmount = calculatedWaterAmount < 0 ? 0 : calculatedWaterAmount;
-        await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + newWaterAmount);
+        // const water = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR) || 0;
+        // const calculatedWaterAmount = (Number(water) - DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED)
+        // const newWaterAmount = calculatedWaterAmount < 0 ? 0 : calculatedWaterAmount;
+        // await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + newWaterAmount);
   
         const desiredWaterConsumption = await AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE) || 0;
         const newDesiredWaterConsumption = (Number(desiredWaterConsumption) + DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED);
@@ -129,7 +129,7 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
         const newCoffeeAmount = (Number(coffees) + 1);
         await AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, '' + newCoffeeAmount);
   
-        return { newCoffeeAmount, newWaterAmount, newDesiredWaterConsumption };
+        return { newCoffeeAmount, newDesiredWaterConsumption };
       } catch (err) {
         return rejectWithValue(err);
       }
