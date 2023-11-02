@@ -55,19 +55,19 @@ export const Home = (): JSX.Element => {
     }, []);
 
     useEffect(() => {
-        const subscription = AppState.addEventListener('change', nextAppState => {
+
+        const reset = () => {
             const today = getCurrentDate();
             if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
                 dispatch(setCurrentDate());
                 dispatch(resetDailyData());
                 scheduleNotifications();
-                
-                //Notifications.scheduleNotification(new Date(Date.now() + 5 * 1000));
-                //Notifications.scheduleNotification(new Date(Date.now() + 10 * 1000));
-                //Notifications.scheduleNotification(new Date(Date.now() + 15 * 1000));
             }
-            
+        };
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            reset(); // When app wasn't closed but  changed state to background or foreground
         });
+        reset(); // When app is launched if OS closed it
 
         return () => {
             subscription.remove();
