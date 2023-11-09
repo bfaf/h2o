@@ -14,10 +14,8 @@ import Notifications from '../../Notifications';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar, resetDailyData } from '../../stores/redux/thunks/dailyConsumption';
 import { currentDateSelector } from '../../stores/redux/slices/currentDateSlice';
-import { getCurrentDate, getCurrentDateForNotifications, getNextDayNotification } from '../../utils/date';
+import { getCurrentDate } from '../../utils/date';
 import { fetchCurrentDate, setCurrentDate } from '../../stores/redux/thunks/currentDate';
-
-const getRandomInt = (max: number):number => Math.floor(Math.random() * max);
 
 export const Home = (): JSX.Element => {
     const dispatch: AppDispatch = useDispatch();
@@ -26,26 +24,36 @@ export const Home = (): JSX.Element => {
     const { currentDate } = useSelector(currentDateSelector);
 
     const scheduleNotifications = () => {
-        const nnn = getCurrentDateForNotifications();
+        const now = new Date();
         const currentHour = new Date(Date.now()).getHours() + 1;
         for (let i = currentHour; i < 18; i++) {
-            const hh = i < 10 ? '0' + i : i;
-            console.log(`${nnn}${hh}:00:00`);
-            const date = new Date(Date.parse(`${nnn}${hh}:00:00`));
+            const date = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                i,
+                0,
+                0);
             Notifications.scheduleNotification(date);
         }
-        const nextDayNotif = new Date(Date.parse(getNextDayNotification()));
+        const nextDayNotif = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() + 1,
+            9,
+            0,
+            0);
         Notifications.scheduleNotification(nextDayNotif);
     };
 
     useEffect(() => {
         const initValues = async () => {
             try {
+                await dispatch(fetchCurrentDate());
                 await dispatch(fetchSettingDesiredDailyConsumption());
                 await dispatch(fetchWaterConsumptionSoFar());
                 await dispatch(fetchWaterLevelSoFar());
                 await dispatch(fetchCoffeesConsumedSoFar());
-                await dispatch(fetchCurrentDate());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);

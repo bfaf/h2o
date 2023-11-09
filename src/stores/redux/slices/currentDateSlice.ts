@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { fetchCurrentDate, setCurrentDate } from "../thunks/currentDate";
+import { getCurrentDate } from "../../../utils/date";
 
 interface CurrentDateState {
     currentDate: string;
@@ -9,7 +10,7 @@ interface CurrentDateState {
 const currentDateSlice = createSlice({
     name: "currentDate",
     initialState: {
-        currentDate: '',
+        currentDate: getCurrentDate(),
     } as CurrentDateState,
     reducers: {},
     extraReducers: (builder) => {

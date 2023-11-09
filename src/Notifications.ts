@@ -32,7 +32,7 @@ class Notifications {
     }
 
     scheduleNotification(date: Date) {
-        console.log('schedule notification');
+        console.log('schedule notification', date);
         PushNotification.localNotificationSchedule({
             channelId: 'reminders',
             title: 'Reminder',
