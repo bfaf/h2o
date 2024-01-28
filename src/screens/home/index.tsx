@@ -18,6 +18,7 @@ import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlic
 import { FAB, Portal, Icon } from 'react-native-paper';
 import WaterLevelContainer from './waterLevelContainer';
 import notifee, {
+  AndroidImportance,
   EventType,
   IntervalTrigger,
   RepeatFrequency,
@@ -71,13 +72,19 @@ export const Home = (): JSX.Element => {
 
     // Create a trigger notification
     try {
+      // Create a channel (required for Android)
+      const channelId = await notifee.createChannel({
+        id: 'h2o-channel',
+        name: 'h2o Channel',
+        importance: AndroidImportance.DEFAULT,
+      });
       await notifee.createTriggerNotification(
         {
           id: 'reminder',
           title: 'Reminder to drink water',
           body: `Drank ${drankSoFarMl}ml so far out of ${totalMl}ml`,
           android: {
-            channelId: 'h2o-channel',
+            channelId,
             actions: NOTIFICATION_QUICK_ACTIONS,
           },
           ios: {
@@ -102,13 +109,18 @@ export const Home = (): JSX.Element => {
     };
 
     try {
+      const channelId = await notifee.createChannel({
+        id: 'h2o-channel',
+        name: 'h2o Channel',
+        importance: AndroidImportance.DEFAULT,
+      });
       // Create a trigger notification
       await notifee.createTriggerNotification(
         {
           title: 'Reminder to drink water',
           body: 'Please drink water',
           android: {
-            channelId: 'h2o-channel',
+            channelId,
             actions: NOTIFICATION_QUICK_ACTIONS,
           },
           ios: {
@@ -244,7 +256,6 @@ export const Home = (): JSX.Element => {
 
   useEffect(() => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
-      await resetAndSchedule();
       if (type === EventType.ACTION_PRESS) {
         handleNotificationAction(detail?.pressAction?.id);
       }

@@ -45,6 +45,11 @@ const CustomNavigationBar = ({ navigation, route, options, back }: Props): JSX.E
                         onPress={() => {closeMenu(); navigation.push('History');}}
                         title="History"
                     />
+                    <Menu.Item
+                        leadingIcon="calculator"
+                        onPress={() => {closeMenu(); navigation.push('Calculator');}}
+                        title="Calculator"
+                    />
                 </Menu>
             ) : null}
         </Appbar.Header>

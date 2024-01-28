@@ -13,7 +13,8 @@
     "assemble:debug": "cd android && gradlew assembleDebug",
     "assemble:release": "cd android && gradlew assembleRelease",
     "compile": "tsc",
-    "assemble:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios"
+    "assemble:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
+    "deploy:android": "adb -s EHT0220518000687 install ./android/app/build/outputs/apk/release/app-universal-release.apk"
   },
   "dependencies": {
     "@notifee/react-native": "^7.8.2",

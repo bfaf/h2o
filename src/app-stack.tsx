@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Home, Settings, History } from './screens';
+import { Home, Settings, History, Caluclator } from './screens';
 import CustomNavigationBar from './components/custom-nav-bar';
 
 const Stack = createNativeStackNavigator();
@@ -22,6 +22,10 @@ const AppStack = (): JSX.Element => {
             <Stack.Screen
                 name="History"
                 component={History}
+            />
+            <Stack.Screen
+                name="Calculator"
+                component={Caluclator}
             />
         </Stack.Navigator>
     );
