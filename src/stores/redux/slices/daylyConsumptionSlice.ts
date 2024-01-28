@@ -15,7 +15,7 @@ const daylyConsumptionSlice = createSlice({
   name: "daylyConsumption",
   initialState: {
     currentConsumtionMl: 0,
-    desiredDailyConsumption: 3000,
+    desiredDailyConsumption: 3500,
     coffeesConsumed: 0,
     glassesOfWaterConsumed: 0,
     waterLevel: 200,
