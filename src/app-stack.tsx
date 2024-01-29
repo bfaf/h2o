@@ -40,9 +40,9 @@ const AppStack = (): JSX.Element => {
     const resetAndSchedule = useCallback(async () => {
         reset();
         const date = new Date();
+        const ids = await notifee.getTriggerNotificationIds();
         if (date.getHours() >= 9 && date.getHours() < 18) {
-            const ids = await notifee.getTriggerNotificationIds();
-            if (ids.length > 2) {
+            if (ids.includes('daily')) {
                 await notifee.cancelAllNotifications();
             }
 
@@ -52,7 +52,12 @@ const AppStack = (): JSX.Element => {
                 desiredDailyConsumption,
             ); // Repeatable the whole day
         } else {
-            await notifee.cancelAllNotifications();
+            if (ids.includes('interval')) {
+                await notifee.cancelAllNotifications();
+            }
+            if (ids.includes('daily')) {
+                return;
+            }
             const now = new Date();
             const nextDayNotif = new Date(
                 now.getFullYear(),

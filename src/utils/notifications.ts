@@ -30,7 +30,7 @@ export const scheduleNotification = async (
       });
       await notifee.createTriggerNotification(
         {
-          id: 'reminder',
+          id: 'interval',
           title: 'Reminder to drink water',
           body: `Drank ${drankSoFarMl}ml so far out of ${totalMl}ml`,
           android: {
@@ -69,6 +69,7 @@ export const scheduleNotification = async (
       // Create a trigger notification
       await notifee.createTriggerNotification(
         {
+          id: 'daily',
           title: 'Reminder to drink water',
           body: 'Please drink water',
           android: {
