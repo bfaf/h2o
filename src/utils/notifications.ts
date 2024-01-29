@@ -55,6 +55,9 @@ export const scheduleNotification = async (
       type: TriggerType.TIMESTAMP,
       timestamp: date.getTime(),
       repeatFrequency: RepeatFrequency.DAILY,
+      alarmManager: {
+       allowWhileIdle: true         
+      }
     };
 
     try {

@@ -6,6 +6,7 @@ import { AppDispatch } from './stores/redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { NOTIFICATION_QUICK_ACTIONS, NOTIFICATION_REPEAT_INTERVAL } from './constants';
 import notifee, {
+    AndroidNotificationSetting,
     EventType
 } from '@notifee/react-native';
 import { fetchCurrentDate, setCurrentDate } from './stores/redux/thunks/currentDate';
@@ -67,27 +68,27 @@ const AppStack = (): JSX.Element => {
 
     const handleNotificationAction = useCallback(
         (notifId: string | undefined) => {
-          switch (notifId) {
-            case '200ml':
-              dispatch(addWaterConsumedSoFar(200));
-              calculateIncrease(200, desiredDailyConsumption, waterLevel, dispatch);
-              break;
-            case '300ml':
-              dispatch(addWaterConsumedSoFar(300));
-              calculateIncrease(300, desiredDailyConsumption, waterLevel, dispatch);
-              break;
-            case '500ml':
-              dispatch(addWaterConsumedSoFar(500));
-              calculateIncrease(500, desiredDailyConsumption, waterLevel, dispatch);
-              break;
-            case 'coffee':
-              dispatch(addCoffeesConsumed());
-              calculateIncrease(-200, desiredDailyConsumption, waterLevel, dispatch);
-              break;
-          }
+            switch (notifId) {
+                case '200ml':
+                    dispatch(addWaterConsumedSoFar(200));
+                    calculateIncrease(200, desiredDailyConsumption, waterLevel, dispatch);
+                    break;
+                case '300ml':
+                    dispatch(addWaterConsumedSoFar(300));
+                    calculateIncrease(300, desiredDailyConsumption, waterLevel, dispatch);
+                    break;
+                case '500ml':
+                    dispatch(addWaterConsumedSoFar(500));
+                    calculateIncrease(500, desiredDailyConsumption, waterLevel, dispatch);
+                    break;
+                case 'coffee':
+                    dispatch(addCoffeesConsumed());
+                    calculateIncrease(-200, desiredDailyConsumption, waterLevel, dispatch);
+                    break;
+            }
         },
         [dispatch, calculateIncrease, desiredDailyConsumption, waterLevel],
-      );
+    );
 
     useEffect(() => {
         const initValues = async () => {
@@ -99,6 +100,13 @@ const AppStack = (): JSX.Element => {
                         actions: NOTIFICATION_QUICK_ACTIONS,
                     },
                 ]);
+
+                const settings = await notifee.getNotificationSettings();
+                if (settings.android.alarm == AndroidNotificationSetting.DISABLED) {
+                    // Show some user information to educate them on what exact alarm permission is,
+                    // and why it is necessary for your app functionality, then send them to system preferences:
+                    await notifee.openAlarmPermissionSettings();
+                }
 
                 await dispatch(fetchCurrentDate());
                 await dispatch(fetchSettingDesiredDailyConsumption());
