@@ -104,7 +104,8 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
     'daylyConsumption/setDesiredDailyConsumptionValue',
     async (value: number, { rejectWithValue }) => {
       try {
-        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, '' + value);
+        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, value.toString());
+        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, value.toString());
         return value;
       } catch (err) {
         return rejectWithValue(err);
