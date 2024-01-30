@@ -98,7 +98,7 @@ export const Home = (): JSX.Element => {
               label: '+ Coffee',
               onPress: () => {
                 dispatch(addCoffeesConsumed());
-                calculateIncrease(-200, desiredDailyConsumption, waterLevel, dispatch);
+                calculateIncrease(-200, desiredDailyConsumption, currentConsumtionMl, dispatch);
               },
             },
             {
@@ -106,7 +106,7 @@ export const Home = (): JSX.Element => {
               label: '+ 500ml',
               onPress: () => {
                 dispatch(addWaterConsumedSoFar(500));
-                calculateIncrease(500, desiredDailyConsumption, waterLevel, dispatch);
+                calculateIncrease(500, desiredDailyConsumption, currentConsumtionMl, dispatch);
               },
             },
             {
@@ -114,7 +114,7 @@ export const Home = (): JSX.Element => {
               label: '+ 300ml',
               onPress: () => {
                 dispatch(addWaterConsumedSoFar(300));
-                calculateIncrease(300, desiredDailyConsumption, waterLevel, dispatch);
+                calculateIncrease(300, desiredDailyConsumption, currentConsumtionMl, dispatch);
               },
             },
             {
@@ -122,7 +122,7 @@ export const Home = (): JSX.Element => {
               label: '+ 200ml',
               onPress: () => {
                 dispatch(addWaterConsumedSoFar(200));
-                calculateIncrease(200, desiredDailyConsumption, waterLevel, dispatch);
+                calculateIncrease(200, desiredDailyConsumption, currentConsumtionMl, dispatch);
               },
             },
           ]}

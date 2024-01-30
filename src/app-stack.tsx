@@ -26,7 +26,6 @@ const AppStack = (): JSX.Element => {
     const {
         currentConsumtionMl,
         desiredDailyConsumption,
-        waterLevel,
     } = useSelector(daylyConsumption);
 
     const reset = useCallback(() => {
@@ -76,23 +75,23 @@ const AppStack = (): JSX.Element => {
             switch (notifId) {
                 case '200ml':
                     dispatch(addWaterConsumedSoFar(200));
-                    calculateIncrease(200, desiredDailyConsumption, waterLevel, dispatch);
+                    calculateIncrease(200, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
                 case '300ml':
                     dispatch(addWaterConsumedSoFar(300));
-                    calculateIncrease(300, desiredDailyConsumption, waterLevel, dispatch);
+                    calculateIncrease(300, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
                 case '500ml':
                     dispatch(addWaterConsumedSoFar(500));
-                    calculateIncrease(500, desiredDailyConsumption, waterLevel, dispatch);
+                    calculateIncrease(500, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
                 case 'coffee':
                     dispatch(addCoffeesConsumed());
-                    calculateIncrease(-200, desiredDailyConsumption, waterLevel, dispatch);
+                    calculateIncrease(-200, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
             }
         },
-        [dispatch, calculateIncrease, desiredDailyConsumption, waterLevel],
+        [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl],
     );
 
     useEffect(() => {
