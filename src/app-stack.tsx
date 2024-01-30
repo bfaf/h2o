@@ -11,7 +11,7 @@ import notifee, {
 } from '@notifee/react-native';
 import { fetchCurrentDate, setCurrentDate } from './stores/redux/thunks/currentDate';
 import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, resetDailyData, addWaterLevelSoFar, addCoffeesConsumed, addWaterConsumedSoFar } from './stores/redux/thunks/dailyConsumption';
-import { AppState } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import { currentDateSelector } from './stores/redux/slices/currentDateSlice';
 import { daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
 import { getCurrentDate } from './utils/date';
@@ -107,9 +107,63 @@ const AppStack = (): JSX.Element => {
 
                 const settings = await notifee.getNotificationSettings();
                 if (settings.android.alarm == AndroidNotificationSetting.DISABLED) {
-                    // Show some user information to educate them on what exact alarm permission is,
-                    // and why it is necessary for your app functionality, then send them to system preferences:
-                    await notifee.openAlarmPermissionSettings();
+                    Alert.alert(
+                        'Restrictions Detected',
+                        'To ensure notifications are delivered, please adjust your settings to allow permissions for Alarms',
+                        [
+                            // 3. launch intent to navigate the user to the appropriate screen
+                            {
+                                text: 'OK, open settings',
+                                onPress: async () => await notifee.openAlarmPermissionSettings(),
+                            },
+                            {
+                                text: "Cancel",
+                                onPress: () => console.log("Cancel Pressed"),
+                                style: "cancel"
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+                const powerManagerInfo = await notifee.getPowerManagerInfo();
+                if (powerManagerInfo.activity) {
+                    Alert.alert(
+                        'Restrictions Detected',
+                        'To ensure notifications are delivered, please adjust your settings to prevent the app from being killed',
+                        [
+                            // 3. launch intent to navigate the user to the appropriate screen
+                            {
+                                text: 'OK, open settings',
+                                onPress: async () => await notifee.openPowerManagerSettings(),
+                            },
+                            {
+                                text: "Cancel",
+                                onPress: () => console.log("Cancel Pressed"),
+                                style: "cancel"
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+                const batteryOptimizationEnabled = await notifee.isBatteryOptimizationEnabled();
+                if (batteryOptimizationEnabled) {
+                    Alert.alert(
+                        'Restrictions Detected',
+                        'To ensure notifications are delivered, please disable battery optimization for the app.',
+                        [
+                            // 3. launch intent to navigate the user to the appropriate screen
+                            {
+                                text: 'OK, open settings',
+                                onPress: async () => await notifee.openBatteryOptimizationSettings(),
+                            },
+                            {
+                                text: "Cancel",
+                                onPress: () => console.log("Cancel Pressed"),
+                                style: "cancel"
+                            },
+                        ],
+                        { cancelable: false }
+                    );
                 }
 
                 await dispatch(fetchCurrentDate());
