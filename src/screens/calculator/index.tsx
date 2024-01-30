@@ -9,8 +9,6 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
 import { setSettingDesiredDailyConsumption } from '../../stores/redux/thunks/dailyConsumption';
 import { useNavigation } from '@react-navigation/native';
-// import { useSelector } from 'react-redux';
-// import { RootState } from '../../stores/redux/store';
 
 const styles = StyleSheet.create({
     container: {

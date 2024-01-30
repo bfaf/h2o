@@ -6,12 +6,14 @@ import {
 
 import daylyConsumptionReducer from './slices/daylyConsumptionSlice';
 import currentDateReducer from './slices/currentDateSlice';
+import settingsReducer from './slices/settingSlice';
 import { AppState } from 'react-native';
 
 const rootReducer = combineReducers({
   daylyConsumption: daylyConsumptionReducer,
   currentDate: currentDateReducer,
-})
+  settings: settingsReducer,
+});
 
 export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
   return configureStore({

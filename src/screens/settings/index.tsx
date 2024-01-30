@@ -2,25 +2,200 @@
  * @format
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, SafeAreaView, View, Text } from 'react-native';
-// import { useSelector } from 'react-redux';
-// import { RootState } from '../../stores/redux/store';
+import { Button, Switch, Menu, Divider } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../stores/redux/store';
+import { settings } from '../../stores/redux/slices/settingSlice';
+import { setReminderSwitch, setWaterPerCoffeeCup } from '../../stores/redux/thunks/settings';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const styles = StyleSheet.create({
     container: {
         width: '100%',
         height: '100%'
     },
+    reminderSwitchContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        margin: 20,
+        marginBottom: 0
+    },
+    reminders: {
+        display: 'flex',
+        flexDirection: 'column',
+        margin: 20,
+        marginBottom: 0
+    },
+    timeManagement: {
+        flexDirection: 'row',
+    },
+    repeatInterval: {
+        flexDirection: 'row',
+        marginTop: 15
+    },
+    remindersText: {
+        flex: 3,
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#000'
+    },
+    reminderSwitch: {
+        flex: 3,
+    },
+    reminderFromText: {
+        marginLeft: 0,
+        marginRight: 10,
+        textAlignVertical: 'center',
+        color: '#000',
+        fontSize: 16
+    },
+    reminderToText: {
+        //marginTop: 5,
+        // textAlign: 'center',
+        marginLeft: 10,
+        marginRight: 10,
+        textAlignVertical: 'center',
+        color: '#000',
+        fontSize: 16
+    },
+    biggerText: {
+        fontSize: 16
+    },
 });
 
 export const Settings = (): JSX.Element => {
-    // const { message } = useSelector((state: RootState) => state.message);
+    const dispatch: AppDispatch = useDispatch();
+    const {
+        remindersToggleEnabled,
+        waterPerCoffeeCup,
+        repeatInterval,
+        fromTime,
+        toTime,
+    } = useSelector(settings);
+    const [fromDate, setFromDate] = useState<Date>(new Date());
+    const [toDate, setToDate] = useState<Date>(new Date());
+    const [showFromDate, setShowFromDate] = useState<boolean>(false);
+    const [showToDate, setShowToDate] = useState<boolean>(false);
+    console.log('fromTime', fromTime);
+    const [showRepeatIntervalMenu, setShowRepeatIntervalMenu] = useState<boolean>(false);
+    const [selectedRepeatInterval, setSelectedRepeatInterval] = useState<string>('90 min');
+
+    const [showCoffeeCupMenu, setShowCoffeeCupMenu] = useState<boolean>(false);
+
+    const openMenu = () => setShowRepeatIntervalMenu(true);
+    const closeMenu = () => setShowRepeatIntervalMenu(false);
+
+    const onChangeFromDate = (selectedDate: Date | undefined, toDate: Date) => {
+        // TODO: validate whether fromDate is bigger than toDate
+        setShowFromDate(false);
+        setFromDate(selectedDate);
+    };
+
+    const onChangeToDate = (selectedDate: Date | undefined, fromDate: Date) => {
+        // TODO: validate whether toDate is bigger than fromDate
+        setShowToDate(false);
+        setToDate(selectedDate);
+    };
+
+    const onSelectedMenuItem = (value: string) => {
+        setSelectedRepeatInterval(value);
+        closeMenu();
+    };
+
+    const openCoffeeMenu = () => setShowCoffeeCupMenu(true);
+    const closeCoffeeMenu = () => setShowCoffeeCupMenu(false);
+    const onSelectedCoffeeCupMenuItem = (value: '100 ml' | '200 ml' | '300 ml' | '400 ml' | '500 ml') => {
+        console.log('onSelectedCoffeeCupMenuItem', value);
+        switch (value) {
+            case '100 ml':
+                dispatch(setWaterPerCoffeeCup(100));
+                break;
+            case '200 ml':
+                dispatch(setWaterPerCoffeeCup(200));
+                break;
+            case '300 ml':
+                dispatch(setWaterPerCoffeeCup(300));
+                break;
+            case '400 ml':
+                dispatch(setWaterPerCoffeeCup(400));
+                break;
+            case '500 ml':
+                dispatch(setWaterPerCoffeeCup(500));
+                break;
+            default:
+                console.log('Wrong value is passed for water per coffee cup');
+        }
+
+        closeCoffeeMenu();
+    };
+
+    // new Date(Date.parse(fromTime))
+    const onToggleSwitch = () => { dispatch(setReminderSwitch(!remindersToggleEnabled)) };
+    const timeFormatOptions = { hour: "2-digit", minute: "2-digit", } as Intl.DateTimeFormatOptions;
+    const fromTimeLocalised = fromDate.toLocaleTimeString('bg-BG', timeFormatOptions);
+    const toTimeLocalised = toDate.toLocaleTimeString('bg-BG', timeFormatOptions);
 
     return (
         <SafeAreaView>
             <View style={styles.container}>
-                <Text>Settings</Text>
+                <View style={styles.reminderSwitchContainer}>
+                    <Text style={styles.reminderFromText}>Coffee cup add water:</Text>
+                    <Menu visible={showCoffeeCupMenu} onDismiss={closeCoffeeMenu} anchor={<Button mode="outlined" labelStyle={styles.biggerText} onPress={openCoffeeMenu}>{waterPerCoffeeCup} ml</Button>}>
+                        <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('100 ml')} title="100 ml" />
+                        <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('200 ml')} title="200 ml" />
+                        <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('300 ml')} title="300 ml" />
+                        <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('400 ml')} title="400 ml" />
+                        <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('500 ml')} title="500 ml" />
+                    </Menu>
+                </View>
+                <View style={styles.reminderSwitchContainer}>
+                    <Text style={styles.remindersText}>Show reminders</Text>
+                    <Switch style={styles.reminderSwitch} value={remindersToggleEnabled} onValueChange={onToggleSwitch} />
+                </View>
+                {remindersToggleEnabled && (<View style={styles.reminders}>
+                    <View style={styles.timeManagement}>
+                        <Text style={styles.reminderFromText}>From: </Text>
+                        <Button mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowFromDate(true)} >
+                            {fromTimeLocalised}
+                        </Button>
+                        {showFromDate && (<DateTimePicker
+                            testID="dateTimePicker"
+                            value={new Date(Date.parse(fromTime))}
+                            mode='time'
+                            onChange={(_event, date) => onChangeFromDate(date, toDate)}
+                            display='spinner'
+                            is24Hour={true}
+                            minuteInterval={30}
+                        />)
+                        }
+                        <Text style={styles.reminderToText}>To: </Text>
+                        <Button mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowToDate(true)}>
+                            {toTimeLocalised}
+                        </Button>
+                        {showToDate && (<DateTimePicker
+                            testID="dateTimePicker"
+                            value={toDate}
+                            mode='time'
+                            onChange={(_event, date) => onChangeToDate(date, fromDate)}
+                            display='spinner'
+                            is24Hour={true}
+                            minuteInterval={30}
+                        />)
+                        }
+                    </View>
+                    <View style={styles.repeatInterval}>
+                        <Text style={styles.reminderFromText}>Show every:</Text>
+                        <Menu visible={showRepeatIntervalMenu} onDismiss={closeMenu} anchor={<Button mode="outlined" labelStyle={styles.biggerText} onPress={openMenu}>{selectedRepeatInterval}</Button>}>
+                            <Menu.Item onPress={() => onSelectedMenuItem('30 min')} title="30 min" />
+                            <Menu.Item onPress={() => onSelectedMenuItem('60 min')} title="60 min" />
+                            <Menu.Item onPress={() => onSelectedMenuItem('90 min')} title="90 min" />
+                        </Menu>
+                    </View>
+                </View>
+                )
+                }
             </View>
         </SafeAreaView>
     );

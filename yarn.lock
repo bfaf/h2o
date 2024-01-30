@@ -1710,6 +1710,13 @@
     prompts "^2.4.0"
     semver "^7.5.2"
 
+"@react-native-community/datetimepicker@^7.6.2":
+  version "7.6.2"
+  resolved "https://registry.npmjs.org/@react-native-community/datetimepicker/-/datetimepicker-7.6.2.tgz"
+  integrity sha512-ogZnvCmNG/lGHhEQypqz/mPymiIWD5jv6uKczg/l/aWgiKs1RDPQH1abh+R0I26aKoXmgamJJPuXKeC5eRWtZg==
+  dependencies:
+    invariant "^2.2.4"
+
 "@react-native-masked-view/masked-view@github:bfaf/masked-view":
   version "0.3.1"
   resolved "git+ssh://git@github.com/bfaf/masked-view.git#95f2e1c8bfa77e49b71d1eff4a1287a186e08a17"

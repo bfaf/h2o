@@ -10,6 +10,12 @@ export const STORE_KEY_GLASSES_OF_WATER_CONSUMED = 'glassesOfWaterConsumed';
 export const STORE_KEY_WATER_LEVEL_SO_FAR = 'waterLevelSoFar';
 export const STORE_KEY_CURRENT_DATE = 'currentDate';
 
+export const STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP = 'settings.reminder.waterPerCoffeeCup';
+export const STORE_KEY_SETTINGS_REPEAT_INTERVAL = 'settings.reminder.repeatInterval';
+export const STORE_KEY_SETTINGS_REMINDER_SWITCH = 'settings.reminder.switch';
+export const STORE_KEY_SETTINGS_FROM_DATE = 'settings.reminder.fromDate';
+export const STORE_KEY_SETTINGS_TO_DATE = 'settings.reminder.toDate';
+
 export const NOTIFICATION_QUICK_ACTIONS = [
     {
         id: '200ml',

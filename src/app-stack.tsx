@@ -17,6 +17,7 @@ import { daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
 import { getCurrentDate } from './utils/date';
 import { scheduleNotification, scheduleDailyNotification } from './utils/notifications';
 import { calculateIncrease } from './utils/hooks';
+import { fetchAllSettings } from './stores/redux/thunks/settings';
 
 const Stack = createNativeStackNavigator();
 
@@ -118,27 +119,7 @@ const AppStack = (): JSX.Element => {
                             },
                             {
                                 text: "Cancel",
-                                onPress: () => console.log("Cancel Pressed"),
-                                style: "cancel"
-                            },
-                        ],
-                        { cancelable: false }
-                    );
-                }
-                const powerManagerInfo = await notifee.getPowerManagerInfo();
-                if (powerManagerInfo.activity) {
-                    Alert.alert(
-                        'Restrictions Detected',
-                        'To ensure notifications are delivered, please adjust your settings to prevent the app from being killed',
-                        [
-                            // 3. launch intent to navigate the user to the appropriate screen
-                            {
-                                text: 'OK, open settings',
-                                onPress: async () => await notifee.openPowerManagerSettings(),
-                            },
-                            {
-                                text: "Cancel",
-                                onPress: () => console.log("Cancel Pressed"),
+                                onPress: () => {},
                                 style: "cancel"
                             },
                         ],
@@ -158,7 +139,7 @@ const AppStack = (): JSX.Element => {
                             },
                             {
                                 text: "Cancel",
-                                onPress: () => console.log("Cancel Pressed"),
+                                onPress: () => {},
                                 style: "cancel"
                             },
                         ],
@@ -171,6 +152,7 @@ const AppStack = (): JSX.Element => {
                 await dispatch(fetchWaterConsumptionSoFar());
                 await dispatch(fetchWaterLevelSoFar());
                 await dispatch(fetchCoffeesConsumedSoFar());
+                await dispatch(fetchAllSettings());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);
@@ -184,7 +166,7 @@ const AppStack = (): JSX.Element => {
         const subscription = AppState.addEventListener('change', _nextAppState => {
             resetAndSchedule();
         });
-        resetAndSchedule(); // When app is launched if OS closed it
+        // resetAndSchedule(); // When app is launched if OS closed it
 
         return () => {
             subscription.remove();
