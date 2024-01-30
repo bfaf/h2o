@@ -3,8 +3,8 @@ import { Animated } from 'react-native';
 
 import type { PropsWithChildren } from 'react';
 
-type WaterLevelContainerProps = PropsWithChildren<{ increse: number }>;
-const WaterLevelContainer = ({ increse }: WaterLevelContainerProps) => {
+type WaterLevelContainerProps = PropsWithChildren<{ increse: number, femaleIcon: boolean }>;
+const WaterLevelContainer = ({ increse, femaleIcon }: WaterLevelContainerProps) => {
     const initialValue = 200;
     const fadeAnim = useRef(new Animated.Value(initialValue)).current;
 
@@ -19,7 +19,7 @@ const WaterLevelContainer = ({ increse }: WaterLevelContainerProps) => {
     return (
         <Animated.View>
             <Animated.Image
-                source={require('../../images/human-200.png')}
+                source={femaleIcon ? require('../../images/female-200.png') : require('../../images/male-200.png')}
                 style={{
                     width: 300,
                     transform: [{

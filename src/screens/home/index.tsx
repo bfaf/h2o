@@ -22,6 +22,7 @@ import {
   addWaterConsumedSoFar,
 } from '../../stores/redux/thunks/dailyConsumption';
 import { calculateIncrease } from '../../utils/hooks';
+import { settings } from '../../stores/redux/slices/settingSlice';
 
 export const Home = (): JSX.Element => {
   const dispatch: AppDispatch = useDispatch();
@@ -32,6 +33,10 @@ export const Home = (): JSX.Element => {
     waterLevel,
     coffeesConsumed,
   } = useSelector(daylyConsumption);
+  const {
+    waterPerCoffeeCup,
+    femaleIcon,
+} = useSelector(settings);
 
   const renderMaskedView = (waterLevel: number) => {
     const isIOS = Platform.OS === 'ios';
@@ -40,10 +45,10 @@ export const Home = (): JSX.Element => {
         <MaskedView
           key="maskedView"
           style={styles.maskedView}
-          maskElement={<WaterLevelContainer increse={waterLevel} />}>
+          maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}>
           <Image
             key="watered"
-            source={require('../../images/human-watered-200.png')}
+            source={femaleIcon ? require('../../images/female-watered-200.png') : require('../../images/male-watered-200.png')}
             style={styles.mask}
           />
         </MaskedView>
@@ -53,10 +58,10 @@ export const Home = (): JSX.Element => {
         <MaskedView
           key="maskedView"
           style={styles.maskedView}
-          maskElement={<WaterLevelContainer increse={waterLevel} />}>
+          maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}>
           <Image
             key="watered"
-            source={require('../../images/human-watered-200.png')}
+            source={femaleIcon ? require('../../images/female-watered-200.png') : require('../../images/male-watered-200.png')}
             style={styles.mask}
           />
         </MaskedView>
@@ -77,7 +82,7 @@ export const Home = (): JSX.Element => {
       <View style={styles.maskView}>
         <Image
           key="top"
-          source={require('../../images/human-200.png')}
+          source={femaleIcon ? require('../../images/female-200.png') : require('../../images/male-200.png')}
           style={styles.image}
         />
         {renderMaskedView(waterLevel)}
@@ -97,8 +102,8 @@ export const Home = (): JSX.Element => {
               icon: 'coffee',
               label: '+ Coffee',
               onPress: () => {
-                dispatch(addCoffeesConsumed());
-                calculateIncrease(-200, desiredDailyConsumption, currentConsumtionMl, dispatch);
+                dispatch(addCoffeesConsumed(waterPerCoffeeCup));
+                calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl, dispatch);
               },
             },
             {

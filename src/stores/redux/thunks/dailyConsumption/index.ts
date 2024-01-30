@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
+import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
 
 export const resetDailyData = createAsyncThunk(
     'daylyConsumption/resetValue',
@@ -115,15 +115,10 @@ export const fetchSettingDesiredDailyConsumption = createAsyncThunk(
   
   export const addCoffeesConsumed = createAsyncThunk(
     'daylyConsumption/addCoffeesConsumedValue',
-    async (thunkApi, { rejectWithValue }) => {
+    async (value: number, { rejectWithValue }) => {
       try {
-        // const water = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR) || 0;
-        // const calculatedWaterAmount = (Number(water) - DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED)
-        // const newWaterAmount = calculatedWaterAmount < 0 ? 0 : calculatedWaterAmount;
-        // await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + newWaterAmount);
-  
         const desiredWaterConsumption = await AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE) || 0;
-        const newDesiredWaterConsumption = (Number(desiredWaterConsumption) + DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED);
+        const newDesiredWaterConsumption = (Number(desiredWaterConsumption) + value);
         await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + newDesiredWaterConsumption);
   
         const coffees = await AsyncStorage.getItem(STORE_KEY_COFFEES_CONSUMPTION) || 0;

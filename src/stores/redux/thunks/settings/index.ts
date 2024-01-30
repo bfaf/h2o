@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_SETTINGS_FROM_DATE, STORE_KEY_SETTINGS_REMINDER_SWITCH, STORE_KEY_SETTINGS_REPEAT_INTERVAL, STORE_KEY_SETTINGS_TO_DATE, STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP } from "../../../../constants";
+import { STORE_KEY_SETTINGS_FROM_DATE, STORE_KEY_SETTINGS_HUMAN_ICON, STORE_KEY_SETTINGS_REMINDER_SWITCH, STORE_KEY_SETTINGS_REPEAT_INTERVAL, STORE_KEY_SETTINGS_TO_DATE, STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP } from "../../../../constants";
 
 export const setReminderSwitch = createAsyncThunk(
     'settings/setReminderSwitch',
@@ -63,6 +63,18 @@ export const setToDate = createAsyncThunk(
     }
 );
 
+export const setHumanIcon = createAsyncThunk(
+    'settings/setHumanIcon',
+    async (isFemaleIcon: boolean, { rejectWithValue }) => {
+        try {
+            await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, isFemaleIcon.toString());
+            return isFemaleIcon;
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+);
+
 export const fetchAllSettings = createAsyncThunk(
     'settings/fetchAllSettings',
     async (_, { rejectWithValue }) => {
@@ -73,6 +85,7 @@ export const fetchAllSettings = createAsyncThunk(
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL),
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_FROM_DATE),
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_TO_DATE),
+                AsyncStorage.getItem(STORE_KEY_SETTINGS_HUMAN_ICON),
             ]);
             if (values.every(val => val != null)) {
                 return {
@@ -81,6 +94,7 @@ export const fetchAllSettings = createAsyncThunk(
                     repeatInterval: Number(values[2]),
                     fromTime: values[3] != null ? values[3] : new Date(2024, 1, 1, 9, 0, 0).toISOString(),
                     toTime: values[4] != null ? values[4] : new Date(2024, 1, 1, 18, 0, 0).toISOString(),
+                    femaleIcon: values[5] === 'true'
                 };
             } else {
                 const fromTime = new Date(2024, 1, 1, 9, 0, 0).toISOString();
@@ -90,12 +104,14 @@ export const fetchAllSettings = createAsyncThunk(
                 await AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, '60');
                 await AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, fromTime);
                 await AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, toTime); 
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, 'true'); 
                 return {
                     remindersToggleEnabled: true,
                     waterPerCoffeeCup: 200,
                     repeatInterval: 60,
                     fromTime,
                     toTime,
+                    femaleIcon: true
                 };
             }
         } catch (err) {

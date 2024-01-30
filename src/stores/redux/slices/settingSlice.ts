@@ -1,6 +1,6 @@
 import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { fetchAllSettings, setFromDate, setReminderSwitch, setRepeatInterval, setToDate, setWaterPerCoffeeCup } from "../thunks/settings";
+import { fetchAllSettings, setFromDate, setHumanIcon, setReminderSwitch, setRepeatInterval, setToDate, setWaterPerCoffeeCup } from "../thunks/settings";
 
 interface SettingsState {
     remindersToggleEnabled: boolean;
@@ -8,6 +8,7 @@ interface SettingsState {
     fromTime: string,
     toTime: string,
     repeatInterval: number, // minutes
+    femaleIcon: boolean,
     errors: SerializedError | null;
   }
 
@@ -19,6 +20,7 @@ interface SettingsState {
         repeatInterval: 60,
         fromTime: new Date(2024, 1, 1, 9, 0, 0).toISOString(),
         toTime: new Date(2024, 1, 1, 18, 0, 0).toISOString(),
+        femaleIcon: true,
         errors: null,
     } as SettingsState,
     reducers: {},
@@ -43,6 +45,9 @@ interface SettingsState {
         })
         .addCase(setToDate.fulfilled, (state, action) => {
             state.toTime = action.payload;
+        })
+        .addCase(setHumanIcon.fulfilled, (state, action) => {
+            state.femaleIcon = action.payload;
         })
     },
   });

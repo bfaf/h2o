@@ -1,5 +1,4 @@
 export const DEFAULT_DAILY_CONSUMPTION = 3500; // this is in milliters
-export const DEFAULT_WATER_INCREASE_WHEN_COFFEE_ADDED = 200; // milliters
 export const NOTIFICATION_REPEAT_INTERVAL = 60; // minutes
 
 export const STORE_KEY_WATER_CONSUMED_SO_FAR = 'waterConsumedSoFar';
@@ -15,6 +14,7 @@ export const STORE_KEY_SETTINGS_REPEAT_INTERVAL = 'settings.reminder.repeatInter
 export const STORE_KEY_SETTINGS_REMINDER_SWITCH = 'settings.reminder.switch';
 export const STORE_KEY_SETTINGS_FROM_DATE = 'settings.reminder.fromDate';
 export const STORE_KEY_SETTINGS_TO_DATE = 'settings.reminder.toDate';
+export const STORE_KEY_SETTINGS_HUMAN_ICON = 'settings.humanIcon';
 
 export const NOTIFICATION_QUICK_ACTIONS = [
     {

@@ -18,6 +18,7 @@ import { getCurrentDate } from './utils/date';
 import { scheduleNotification, scheduleDailyNotification } from './utils/notifications';
 import { calculateIncrease } from './utils/hooks';
 import { fetchAllSettings } from './stores/redux/thunks/settings';
+import { settings } from './stores/redux/slices/settingSlice';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,13 @@ const AppStack = (): JSX.Element => {
         currentConsumtionMl,
         desiredDailyConsumption,
     } = useSelector(daylyConsumption);
+    const {
+        remindersToggleEnabled,
+        waterPerCoffeeCup,
+        repeatInterval,
+        fromTime,
+        toTime,
+    } = useSelector(settings);
 
     const reset = useCallback(() => {
         const today = getCurrentDate();
@@ -39,15 +47,21 @@ const AppStack = (): JSX.Element => {
 
     const resetAndSchedule = useCallback(async () => {
         reset();
+        if (!remindersToggleEnabled) {
+            await notifee.cancelAllNotifications();
+            return;
+        }
+        const fromTimeConverted = new Date(Date.parse(fromTime));
+        const toTimeConverted = new Date(Date.parse(toTime));
         const date = new Date();
         const ids = await notifee.getTriggerNotificationIds();
-        if (date.getHours() >= 9 && date.getHours() < 18) {
+        if (date.getHours() >= fromTimeConverted.getHours() && date.getHours() < toTimeConverted.getHours()) {
             if (ids.includes('daily')) {
                 await notifee.cancelAllNotifications();
             }
 
             scheduleNotification(
-                NOTIFICATION_REPEAT_INTERVAL,
+                repeatInterval,
                 currentConsumtionMl,
                 desiredDailyConsumption,
             ); // Repeatable the whole day
@@ -63,13 +77,13 @@ const AppStack = (): JSX.Element => {
                 now.getFullYear(),
                 now.getMonth(),
                 now.getDate() + 1,
-                9,
+                fromTimeConverted.getHours(),
                 0,
                 0,
             );
             scheduleDailyNotification(nextDayNotif);
         }
-    }, [reset, currentConsumtionMl, desiredDailyConsumption]);
+    }, [reset, currentConsumtionMl, desiredDailyConsumption, remindersToggleEnabled, fromTime, toTime, repeatInterval]);
 
     const handleNotificationAction = useCallback(
         (notifId: string | undefined) => {
@@ -87,12 +101,12 @@ const AppStack = (): JSX.Element => {
                     calculateIncrease(500, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
                 case 'coffee':
-                    dispatch(addCoffeesConsumed());
-                    calculateIncrease(-200, desiredDailyConsumption, currentConsumtionMl, dispatch);
+                    dispatch(addCoffeesConsumed(waterPerCoffeeCup));
+                    calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl, dispatch);
                     break;
             }
         },
-        [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl],
+        [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
     );
 
     useEffect(() => {

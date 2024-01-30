@@ -8,7 +8,7 @@ import { Button, Switch, Menu, Divider } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
 import { settings } from '../../stores/redux/slices/settingSlice';
-import { setReminderSwitch, setWaterPerCoffeeCup } from '../../stores/redux/thunks/settings';
+import { setFromDate, setHumanIcon, setReminderSwitch, setRepeatInterval, setToDate, setWaterPerCoffeeCup } from '../../stores/redux/thunks/settings';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const styles = StyleSheet.create({
@@ -73,41 +73,45 @@ export const Settings = (): JSX.Element => {
         repeatInterval,
         fromTime,
         toTime,
+        femaleIcon,
     } = useSelector(settings);
-    const [fromDate, setFromDate] = useState<Date>(new Date());
-    const [toDate, setToDate] = useState<Date>(new Date());
     const [showFromDate, setShowFromDate] = useState<boolean>(false);
     const [showToDate, setShowToDate] = useState<boolean>(false);
-    console.log('fromTime', fromTime);
     const [showRepeatIntervalMenu, setShowRepeatIntervalMenu] = useState<boolean>(false);
-    const [selectedRepeatInterval, setSelectedRepeatInterval] = useState<string>('90 min');
-
     const [showCoffeeCupMenu, setShowCoffeeCupMenu] = useState<boolean>(false);
-
-    const openMenu = () => setShowRepeatIntervalMenu(true);
-    const closeMenu = () => setShowRepeatIntervalMenu(false);
 
     const onChangeFromDate = (selectedDate: Date | undefined, toDate: Date) => {
         // TODO: validate whether fromDate is bigger than toDate
         setShowFromDate(false);
-        setFromDate(selectedDate);
+        dispatch(setFromDate(selectedDate?.toISOString() || ''));
     };
 
     const onChangeToDate = (selectedDate: Date | undefined, fromDate: Date) => {
         // TODO: validate whether toDate is bigger than fromDate
         setShowToDate(false);
-        setToDate(selectedDate);
+        dispatch(setToDate(selectedDate?.toISOString() || ''));
     };
 
-    const onSelectedMenuItem = (value: string) => {
-        setSelectedRepeatInterval(value);
+    const openMenu = () => setShowRepeatIntervalMenu(true);
+    const closeMenu = () => setShowRepeatIntervalMenu(false);
+    const onSelectedRepeatIntervalMenuItem = (value: '30 min' | '60 min' | '90 min') => {
+        switch(value) {
+            case '30 min':
+                dispatch(setRepeatInterval(30));
+                break;
+            case '60 min':
+                dispatch(setRepeatInterval(60));
+                break;
+            case '90 min':
+                dispatch(setRepeatInterval(90));
+                break;
+        }
         closeMenu();
     };
 
     const openCoffeeMenu = () => setShowCoffeeCupMenu(true);
     const closeCoffeeMenu = () => setShowCoffeeCupMenu(false);
     const onSelectedCoffeeCupMenuItem = (value: '100 ml' | '200 ml' | '300 ml' | '400 ml' | '500 ml') => {
-        console.log('onSelectedCoffeeCupMenuItem', value);
         switch (value) {
             case '100 ml':
                 dispatch(setWaterPerCoffeeCup(100));
@@ -131,17 +135,19 @@ export const Settings = (): JSX.Element => {
         closeCoffeeMenu();
     };
 
-    // new Date(Date.parse(fromTime))
+    const fromTimeConverted = new Date(Date.parse(fromTime));
+    const toTimeConverted = new Date(Date.parse(toTime));
+    const onToggleIconSwitch = () => { dispatch(setHumanIcon(!femaleIcon)) };
     const onToggleSwitch = () => { dispatch(setReminderSwitch(!remindersToggleEnabled)) };
     const timeFormatOptions = { hour: "2-digit", minute: "2-digit", } as Intl.DateTimeFormatOptions;
-    const fromTimeLocalised = fromDate.toLocaleTimeString('bg-BG', timeFormatOptions);
-    const toTimeLocalised = toDate.toLocaleTimeString('bg-BG', timeFormatOptions);
+    const fromTimeLocalised = fromTimeConverted.toLocaleTimeString('bg-BG', timeFormatOptions);
+    const toTimeLocalised = toTimeConverted.toLocaleTimeString('bg-BG', timeFormatOptions);
 
     return (
         <SafeAreaView>
             <View style={styles.container}>
                 <View style={styles.reminderSwitchContainer}>
-                    <Text style={styles.reminderFromText}>Coffee cup add water:</Text>
+                    <Text style={styles.reminderFromText}>Water to add per cup of coffee:</Text>
                     <Menu visible={showCoffeeCupMenu} onDismiss={closeCoffeeMenu} anchor={<Button mode="outlined" labelStyle={styles.biggerText} onPress={openCoffeeMenu}>{waterPerCoffeeCup} ml</Button>}>
                         <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('100 ml')} title="100 ml" />
                         <Menu.Item onPress={() => onSelectedCoffeeCupMenuItem('200 ml')} title="200 ml" />
@@ -151,34 +157,38 @@ export const Settings = (): JSX.Element => {
                     </Menu>
                 </View>
                 <View style={styles.reminderSwitchContainer}>
+                    <Text style={styles.reminderFromText}>Use female icon</Text>
+                    <Switch style={styles.reminderSwitch} value={femaleIcon} onValueChange={onToggleIconSwitch} />
+                </View>
+                <View style={styles.reminderSwitchContainer}>
                     <Text style={styles.remindersText}>Show reminders</Text>
                     <Switch style={styles.reminderSwitch} value={remindersToggleEnabled} onValueChange={onToggleSwitch} />
                 </View>
-                {remindersToggleEnabled && (<View style={styles.reminders}>
+                <View style={styles.reminders}>
                     <View style={styles.timeManagement}>
-                        <Text style={styles.reminderFromText}>From: </Text>
-                        <Button mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowFromDate(true)} >
+                        <Text disabled={!remindersToggleEnabled} style={styles.reminderFromText}>From: </Text>
+                        <Button disabled={!remindersToggleEnabled} mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowFromDate(true)} >
                             {fromTimeLocalised}
                         </Button>
                         {showFromDate && (<DateTimePicker
                             testID="dateTimePicker"
-                            value={new Date(Date.parse(fromTime))}
+                            value={fromTimeConverted}
                             mode='time'
-                            onChange={(_event, date) => onChangeFromDate(date, toDate)}
+                            onChange={(_event, date) => onChangeFromDate(date, toTimeConverted)}
                             display='spinner'
                             is24Hour={true}
                             minuteInterval={30}
                         />)
                         }
-                        <Text style={styles.reminderToText}>To: </Text>
-                        <Button mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowToDate(true)}>
+                        <Text disabled={!remindersToggleEnabled} style={styles.reminderToText}>To: </Text>
+                        <Button disabled={!remindersToggleEnabled} mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowToDate(true)}>
                             {toTimeLocalised}
                         </Button>
                         {showToDate && (<DateTimePicker
                             testID="dateTimePicker"
-                            value={toDate}
+                            value={toTimeConverted}
                             mode='time'
-                            onChange={(_event, date) => onChangeToDate(date, fromDate)}
+                            onChange={(_event, date) => onChangeToDate(date, fromTimeConverted)}
                             display='spinner'
                             is24Hour={true}
                             minuteInterval={30}
@@ -186,16 +196,14 @@ export const Settings = (): JSX.Element => {
                         }
                     </View>
                     <View style={styles.repeatInterval}>
-                        <Text style={styles.reminderFromText}>Show every:</Text>
-                        <Menu visible={showRepeatIntervalMenu} onDismiss={closeMenu} anchor={<Button mode="outlined" labelStyle={styles.biggerText} onPress={openMenu}>{selectedRepeatInterval}</Button>}>
-                            <Menu.Item onPress={() => onSelectedMenuItem('30 min')} title="30 min" />
-                            <Menu.Item onPress={() => onSelectedMenuItem('60 min')} title="60 min" />
-                            <Menu.Item onPress={() => onSelectedMenuItem('90 min')} title="90 min" />
+                        <Text disabled={!remindersToggleEnabled} style={styles.reminderFromText}>Show every:</Text>
+                        <Menu visible={showRepeatIntervalMenu} onDismiss={closeMenu} anchor={<Button mode="outlined" labelStyle={styles.biggerText} disabled={!remindersToggleEnabled} onPress={openMenu}>{repeatInterval} min</Button>}>
+                            <Menu.Item onPress={() => onSelectedRepeatIntervalMenuItem('30 min')} title="30 min" />
+                            <Menu.Item onPress={() => onSelectedRepeatIntervalMenuItem('60 min')} title="60 min" />
+                            <Menu.Item onPress={() => onSelectedRepeatIntervalMenuItem('90 min')} title="90 min" />
                         </Menu>
                     </View>
                 </View>
-                )
-                }
             </View>
         </SafeAreaView>
     );
