@@ -95,7 +95,7 @@ export const Settings = (): JSX.Element => {
     const openMenu = () => setShowRepeatIntervalMenu(true);
     const closeMenu = () => setShowRepeatIntervalMenu(false);
     const onSelectedRepeatIntervalMenuItem = (value: '30 min' | '60 min' | '90 min') => {
-        switch(value) {
+        switch (value) {
             case '30 min':
                 dispatch(setRepeatInterval(30));
                 break;
@@ -170,8 +170,14 @@ export const Settings = (): JSX.Element => {
                         <Button disabled={!remindersToggleEnabled} mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowFromDate(true)} >
                             {fromTimeLocalised}
                         </Button>
+                        <Text disabled={!remindersToggleEnabled} style={styles.reminderToText}>To: </Text>
+                        <Button disabled={!remindersToggleEnabled} mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowToDate(true)}>
+                            {toTimeLocalised}
+                        </Button>
+                    </View>
+                    <View>
                         {showFromDate && (<DateTimePicker
-                            testID="dateTimePicker"
+                            testID="fromDateTimePicker"
                             value={fromTimeConverted}
                             mode='time'
                             onChange={(_event, date) => onChangeFromDate(date, toTimeConverted)}
@@ -180,12 +186,8 @@ export const Settings = (): JSX.Element => {
                             minuteInterval={30}
                         />)
                         }
-                        <Text disabled={!remindersToggleEnabled} style={styles.reminderToText}>To: </Text>
-                        <Button disabled={!remindersToggleEnabled} mode="outlined" labelStyle={styles.biggerText} onPress={() => setShowToDate(true)}>
-                            {toTimeLocalised}
-                        </Button>
                         {showToDate && (<DateTimePicker
-                            testID="dateTimePicker"
+                            testID="toDateTimePicker"
                             value={toTimeConverted}
                             mode='time'
                             onChange={(_event, date) => onChangeToDate(date, fromTimeConverted)}
