@@ -2,7 +2,7 @@
  * @format
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -10,6 +10,7 @@ import {
   Text,
   Image,
   Platform,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
@@ -36,7 +37,25 @@ export const Home = (): JSX.Element => {
   const {
     waterPerCoffeeCup,
     femaleIcon,
+    errors
 } = useSelector(settings);
+
+  useEffect(() => {
+    if (errors) {
+      Alert.alert(
+        'Errors Detected',
+        `Error(s) while loading the settings: ${errors}. Will load default settings`,
+        [
+            {
+                text: "OK",
+                onPress: () => {},
+                style: "cancel"
+            },
+        ],
+        { cancelable: false }
+    );
+    }
+  }, [errors]);
 
   const renderMaskedView = (waterLevel: number) => {
     const isIOS = Platform.OS === 'ios';

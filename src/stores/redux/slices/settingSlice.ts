@@ -29,10 +29,15 @@ interface SettingsState {
             state.remindersToggleEnabled = action.payload;
         })
         .addCase(fetchAllSettings.fulfilled, (state, action) => {
-            state = {
-                ...action.payload,
-                errors: null
-            };
+            state.remindersToggleEnabled = action.payload.remindersToggleEnabled;
+            state.fromTime = action.payload.fromTime;
+            state.toTime = action.payload.toTime;
+            state.waterPerCoffeeCup = action.payload.waterPerCoffeeCup;
+            state.repeatInterval = action.payload.repeatInterval;
+            state.femaleIcon = action.payload.femaleIcon;
+        })
+        .addCase(fetchAllSettings.rejected, (state, action) => {
+            state.errors = action.error;
         })
         .addCase(setWaterPerCoffeeCup.fulfilled, (state, action) => {
             state.waterPerCoffeeCup = action.payload;

@@ -163,10 +163,10 @@ const AppStack = (): JSX.Element => {
 
                 await dispatch(fetchCurrentDate());
                 await dispatch(fetchSettingDesiredDailyConsumption());
+                await dispatch(fetchAllSettings());
                 await dispatch(fetchWaterConsumptionSoFar());
                 await dispatch(fetchWaterLevelSoFar());
                 await dispatch(fetchCoffeesConsumedSoFar());
-                await dispatch(fetchAllSettings());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);

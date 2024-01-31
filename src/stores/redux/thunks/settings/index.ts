@@ -88,6 +88,8 @@ export const fetchAllSettings = createAsyncThunk(
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_HUMAN_ICON),
             ]);
             if (values.every(val => val != null)) {
+                // console.log('All values found');
+                // values.forEach((v, i) => console.log(i, v));
                 return {
                     remindersToggleEnabled: values[0] === 'true',
                     waterPerCoffeeCup: Number(values[1]),
@@ -97,6 +99,8 @@ export const fetchAllSettings = createAsyncThunk(
                     femaleIcon: values[5] === 'true'
                 };
             } else {
+                // console.log('At least one value not found');
+                // values.forEach((v, i) => console.log(i, v));
                 const fromTime = new Date(2024, 1, 1, 9, 0, 0).toISOString();
                 const toTime = new Date(2024, 1, 1, 18, 0, 0).toISOString();
                 await AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, 'true');
