@@ -180,7 +180,7 @@ const AppStack = (): JSX.Element => {
         const subscription = AppState.addEventListener('change', _nextAppState => {
             resetAndSchedule();
         });
-        // resetAndSchedule(); // When app is launched if OS closed it
+        resetAndSchedule(); // When app is launched if OS closed it
 
         return () => {
             subscription.remove();
