@@ -21,13 +21,17 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import {
   addCoffeesConsumed,
   addWaterConsumedSoFar,
+  addWaterLevelSoFar,
 } from '../../stores/redux/thunks/dailyConsumption';
 import { calculateIncrease } from '../../utils/hooks';
 import { settings } from '../../stores/redux/slices/settingSlice';
+import { useNavigation } from '@react-navigation/native';
 
 export const Home = (): JSX.Element => {
   const dispatch: AppDispatch = useDispatch();
+  const navigation = useNavigation();
   const [openLiquids, setOpenLiquids] = useState<boolean>(false);
+  const [showFabGroup, setShowFabGroup] = useState<boolean>(true);
   const {
     currentConsumtionMl,
     desiredDailyConsumption,
@@ -38,7 +42,17 @@ export const Home = (): JSX.Element => {
     waterPerCoffeeCup,
     femaleIcon,
     errors
-} = useSelector(settings);
+  } = useSelector(settings);
+  
+  useEffect(() => {
+    // Show and hide the fab group
+    navigation.addListener('focus', () => setShowFabGroup(true));
+    navigation.addListener('blur', () => setShowFabGroup(false));
+    return () => {
+      navigation.removeListener('focus', () => {});
+      navigation.removeListener('blur', () => {});
+    };
+  }, [navigation]);
 
   useEffect(() => {
     if (errors) {
@@ -46,14 +60,14 @@ export const Home = (): JSX.Element => {
         'Errors Detected',
         `Error(s) while loading the settings: ${errors}. Will load default settings`,
         [
-            {
-                text: "OK",
-                onPress: () => {},
-                style: "cancel"
-            },
+          {
+            text: "OK",
+            onPress: () => { },
+            style: "cancel"
+          },
         ],
         { cancelable: false }
-    );
+      );
     }
   }, [errors]);
 
@@ -88,6 +102,27 @@ export const Home = (): JSX.Element => {
     }
   };
 
+  const createAction = (amount: number, isCoffee = false,) => {
+    const onPress = () => {
+      let calculated = 0;
+      if (isCoffee) {
+        dispatch(addCoffeesConsumed(amount));
+        calculated = calculateIncrease(-amount, desiredDailyConsumption, currentConsumtionMl);
+      } else {
+        dispatch(addWaterConsumedSoFar(amount));
+        calculated = calculateIncrease(amount, desiredDailyConsumption, currentConsumtionMl);
+      }
+
+      dispatch(addWaterLevelSoFar(calculated));
+    }
+
+    return {
+      icon: isCoffee ? 'coffee' : 'cup',
+      label: isCoffee ? '+ Coffee' : `+ ${amount}ml`,
+      onPress,
+    };
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.dailyLimit}>
@@ -113,42 +148,14 @@ export const Home = (): JSX.Element => {
       <Portal>
         <FAB.Group
           open={openLiquids}
-          visible
+          visible={showFabGroup}
           icon="plus"
           onStateChange={({ open }) => setOpenLiquids(open)}
           actions={[
-            {
-              icon: 'coffee',
-              label: '+ Coffee',
-              onPress: () => {
-                dispatch(addCoffeesConsumed(waterPerCoffeeCup));
-                calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl, dispatch);
-              },
-            },
-            {
-              icon: 'cup',
-              label: '+ 500ml',
-              onPress: () => {
-                dispatch(addWaterConsumedSoFar(500));
-                calculateIncrease(500, desiredDailyConsumption, currentConsumtionMl, dispatch);
-              },
-            },
-            {
-              icon: 'cup',
-              label: '+ 300ml',
-              onPress: () => {
-                dispatch(addWaterConsumedSoFar(300));
-                calculateIncrease(300, desiredDailyConsumption, currentConsumtionMl, dispatch);
-              },
-            },
-            {
-              icon: 'cup',
-              label: '+ 200ml',
-              onPress: () => {
-                dispatch(addWaterConsumedSoFar(200));
-                calculateIncrease(200, desiredDailyConsumption, currentConsumtionMl, dispatch);
-              },
-            },
+            createAction(waterPerCoffeeCup, true),
+            createAction(500),
+            createAction(300),
+            createAction(200),
           ]}
         />
       </Portal>

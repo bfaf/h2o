@@ -87,24 +87,15 @@ const AppStack = (): JSX.Element => {
 
     const handleNotificationAction = useCallback(
         (notifId: string | undefined) => {
-            switch (notifId) {
-                case '200ml':
-                    dispatch(addWaterConsumedSoFar(200));
-                    calculateIncrease(200, desiredDailyConsumption, currentConsumtionMl, dispatch);
-                    break;
-                case '300ml':
-                    dispatch(addWaterConsumedSoFar(300));
-                    calculateIncrease(300, desiredDailyConsumption, currentConsumtionMl, dispatch);
-                    break;
-                case '500ml':
-                    dispatch(addWaterConsumedSoFar(500));
-                    calculateIncrease(500, desiredDailyConsumption, currentConsumtionMl, dispatch);
-                    break;
-                case 'coffee':
-                    dispatch(addCoffeesConsumed(waterPerCoffeeCup));
-                    calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl, dispatch);
-                    break;
+            const num = parseInt(notifId || '0');
+            if (!isNaN(num)) {
+                // coffee
+                dispatch(addCoffeesConsumed(waterPerCoffeeCup));
+                calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl);
             }
+            dispatch(addWaterConsumedSoFar(num));
+            const calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
+            dispatch(addWaterLevelSoFar(calculated));
         },
         [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
     );

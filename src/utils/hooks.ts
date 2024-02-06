@@ -1,7 +1,4 @@
-import { addWaterLevelSoFar } from "../stores/redux/thunks/dailyConsumption";
-import { AppDispatch } from "../stores/redux/store";
-
-export const calculateIncrease = (value: number, desiredDailyConsumption: number, currentlyConsumedWater: number, dispatch: AppDispatch) => {
+export const calculateIncrease = (value: number, desiredDailyConsumption: number, currentlyConsumedWater: number): number => {
     const totalHeight = 200;
     let calculated = ((value / desiredDailyConsumption) * totalHeight);
     if (value < 0) {
@@ -10,13 +7,15 @@ export const calculateIncrease = (value: number, desiredDailyConsumption: number
         calculated = ((value + currentlyConsumedWater) / desiredDailyConsumption) * totalHeight;
     }
     if (calculated < 0) {
-        dispatch(addWaterLevelSoFar(0));
-        return;
+        // dispatch(addWaterLevelSoFar(0));
+        return 0;
     }
     const waterLevel = totalHeight - calculated;
     if (waterLevel < 0) {
-        dispatch(addWaterLevelSoFar(0));
+        // dispatch(addWaterLevelSoFar(0));
+        return 0;
     } else {
-        dispatch(addWaterLevelSoFar(waterLevel));
+        // dispatch(addWaterLevelSoFar(waterLevel));
+        return waterLevel;
     }
 }

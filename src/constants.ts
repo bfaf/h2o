@@ -18,24 +18,24 @@ export const STORE_KEY_SETTINGS_HUMAN_ICON = 'settings.humanIcon';
 
 export const NOTIFICATION_QUICK_ACTIONS = [
     {
-        id: '200ml',
+        id: '200',
         title: '200 ml',
         pressAction: {
-            id: '200ml',
+            id: '200',
         },
     },
     {
-        id: '300ml',
+        id: '300',
         title: '300 ml',
         pressAction: {
-            id: '300ml',
+            id: '300',
         },
     },
     {
-        id: '500ml',
+        id: '500',
         title: '500 ml',
         pressAction: {
-            id: '500ml',
+            id: '500',
         },
     },
     {
