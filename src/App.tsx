@@ -27,7 +27,7 @@ const linking = {
 
 const App = (): JSX.Element => {
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer>
       <StoreProvider store={setupStore({})}>
         <PaperProvider>
           <AppStack />

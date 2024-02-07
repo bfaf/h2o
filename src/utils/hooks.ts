@@ -6,16 +6,14 @@ export const calculateIncrease = (value: number, desiredDailyConsumption: number
     } else {
         calculated = ((value + currentlyConsumedWater) / desiredDailyConsumption) * totalHeight;
     }
+
     if (calculated < 0) {
-        // dispatch(addWaterLevelSoFar(0));
         return 0;
     }
     const waterLevel = totalHeight - calculated;
     if (waterLevel < 0) {
-        // dispatch(addWaterLevelSoFar(0));
         return 0;
     } else {
-        // dispatch(addWaterLevelSoFar(waterLevel));
         return waterLevel;
     }
 }
