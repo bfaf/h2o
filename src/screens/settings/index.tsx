@@ -80,30 +80,30 @@ export const Settings = (): JSX.Element => {
     const [showRepeatIntervalMenu, setShowRepeatIntervalMenu] = useState<boolean>(false);
     const [showCoffeeCupMenu, setShowCoffeeCupMenu] = useState<boolean>(false);
 
-    const onChangeFromDate = (selectedDate: Date | undefined, toDate: Date) => {
+    const onChangeFromDate = async (selectedDate: Date | undefined, toDate: Date) => {
         // TODO: validate whether fromDate is bigger than toDate
         setShowFromDate(false);
-        dispatch(setFromDate(selectedDate?.toISOString() || ''));
+        await dispatch(setFromDate(selectedDate?.toISOString() || ''));
     };
 
-    const onChangeToDate = (selectedDate: Date | undefined, fromDate: Date) => {
+    const onChangeToDate = async (selectedDate: Date | undefined, fromDate: Date) => {
         // TODO: validate whether toDate is bigger than fromDate
         setShowToDate(false);
-        dispatch(setToDate(selectedDate?.toISOString() || ''));
+        await dispatch(setToDate(selectedDate?.toISOString() || ''));
     };
 
     const openMenu = () => setShowRepeatIntervalMenu(true);
     const closeMenu = () => setShowRepeatIntervalMenu(false);
-    const onSelectedRepeatIntervalMenuItem = (value: '30 min' | '60 min' | '90 min') => {
+    const onSelectedRepeatIntervalMenuItem = async (value: '30 min' | '60 min' | '90 min') => {
         switch (value) {
             case '30 min':
-                dispatch(setRepeatInterval(30));
+                await dispatch(setRepeatInterval(30));
                 break;
             case '60 min':
-                dispatch(setRepeatInterval(60));
+                await dispatch(setRepeatInterval(60));
                 break;
             case '90 min':
-                dispatch(setRepeatInterval(90));
+                await dispatch(setRepeatInterval(90));
                 break;
         }
         closeMenu();
@@ -180,7 +180,7 @@ export const Settings = (): JSX.Element => {
                             testID="fromDateTimePicker"
                             value={fromTimeConverted}
                             mode='time'
-                            onChange={(_event, date) => onChangeFromDate(date, toTimeConverted)}
+                            onChange={async (_event, date) => await onChangeFromDate(date, toTimeConverted)}
                             display='spinner'
                             is24Hour={true}
                             minuteInterval={30}
@@ -190,7 +190,7 @@ export const Settings = (): JSX.Element => {
                             testID="toDateTimePicker"
                             value={toTimeConverted}
                             mode='time'
-                            onChange={(_event, date) => onChangeToDate(date, fromTimeConverted)}
+                            onChange={async (_event, date) => await onChangeToDate(date, fromTimeConverted)}
                             display='spinner'
                             is24Hour={true}
                             minuteInterval={30}

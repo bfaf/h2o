@@ -37,16 +37,16 @@ const AppStack = (): JSX.Element => {
         toTime,
     } = useSelector(settings);
 
-    const reset = useCallback(() => {
+    const reset = useCallback(async () => {
         const today = getCurrentDate();
         if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
-            dispatch(setCurrentDate());
-            dispatch(resetDailyData());
+            await dispatch(setCurrentDate());
+            await dispatch(resetDailyData());
         }
     }, [currentDate, dispatch]);
 
     const resetAndSchedule = useCallback(async () => {
-        reset();
+        await reset();
         if (!remindersToggleEnabled) {
             await notifee.cancelAllNotifications();
             return;
@@ -86,16 +86,16 @@ const AppStack = (): JSX.Element => {
     }, [reset, currentConsumtionMl, desiredDailyConsumption, remindersToggleEnabled, fromTime, toTime, repeatInterval]);
 
     const handleNotificationAction = useCallback(
-        (notifId: string | undefined) => {
+        async (notifId: string | undefined) => {
             const num = parseInt(notifId || '0');
             if (!isNaN(num)) {
                 // coffee
-                dispatch(addCoffeesConsumed(waterPerCoffeeCup));
+                await dispatch(addCoffeesConsumed(waterPerCoffeeCup));
                 calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl);
             }
-            dispatch(addWaterConsumedSoFar(num));
+            await dispatch(addWaterConsumedSoFar(num));
             const calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
-            dispatch(addWaterLevelSoFar(calculated));
+            await dispatch(addWaterLevelSoFar(calculated));
         },
         [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
     );
@@ -182,7 +182,7 @@ const AppStack = (): JSX.Element => {
     useEffect(() => {
         return notifee.onForegroundEvent(async ({ type, detail }) => {
             if (type === EventType.ACTION_PRESS) {
-                handleNotificationAction(detail?.pressAction?.id);
+                await handleNotificationAction(detail?.pressAction?.id);
             }
         });
     }, [handleNotificationAction]);
