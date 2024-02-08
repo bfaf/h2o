@@ -1,5 +1,5 @@
 import { RootState } from "../src/stores/redux/store";
-import { getCurrentDate } from "../src/utils/date";
+import { getCurrentDate } from "../src/utils/utils";
 
 type PreloadedStateOverloads = {
     daylyConsumptionOverloads?: any;

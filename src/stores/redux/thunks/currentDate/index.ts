@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORE_KEY_CURRENT_DATE } from "../../../../constants";
-import { getCurrentDate } from "../../../../utils/date";
+import { getCurrentDate } from "../../../../utils/utils";
 
 export const fetchCurrentDate = createAsyncThunk(
     'currentDate/fetchCurrentDateValue',

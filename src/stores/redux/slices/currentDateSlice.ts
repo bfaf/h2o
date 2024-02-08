@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { fetchCurrentDate, setCurrentDate } from "../thunks/currentDate";
-import { getCurrentDate } from "../../../utils/date";
+import { getCurrentDate } from "../../../utils/utils";
 
 interface CurrentDateState {
     currentDate: string;

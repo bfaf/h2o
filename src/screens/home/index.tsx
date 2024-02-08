@@ -66,7 +66,7 @@ export const Home = (): JSX.Element => {
         <RenderMaskedView waterLevel={waterLevel} />
       </View>
       <View style={styles.consumedSoFarView}>
-        <Text style={styles.dailyLimitText}>{currentConsumtionMl} ml</Text>
+        <Text style={styles.dailyLimitText} testID="currentConsumtionMlSoFar">{currentConsumtionMl} ml</Text>
         <Text style={styles.dailyLimitTextSmall}>so far</Text>
       </View>
       <AddLiquid />

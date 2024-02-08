@@ -4,7 +4,7 @@ import { Home, Settings, History, Caluclator } from './screens';
 import CustomNavigationBar from './components/custom-nav-bar';
 import { AppDispatch } from './stores/redux/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { NOTIFICATION_QUICK_ACTIONS, NOTIFICATION_REPEAT_INTERVAL } from './constants';
+import { NOTIFICATION_QUICK_ACTIONS } from './constants';
 import notifee, {
     AndroidNotificationSetting,
     EventType
@@ -14,11 +14,10 @@ import { fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchW
 import { Alert, AppState } from 'react-native';
 import { currentDateSelector } from './stores/redux/slices/currentDateSlice';
 import { daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
-import { getCurrentDate } from './utils/date';
-import { scheduleNotification, scheduleDailyNotification } from './utils/notifications';
-import { calculateIncrease } from './utils/hooks';
+import { calculateIncrease, getCurrentDate, shouldAddCoffee, shouldReset } from './utils/utils';
 import { fetchAllSettings } from './stores/redux/thunks/settings';
 import { settings } from './stores/redux/slices/settingSlice';
+import { scheduleDailyNotification, scheduleNotification } from './utils/notifications';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,16 +36,7 @@ const AppStack = (): JSX.Element => {
         toTime,
     } = useSelector(settings);
 
-    const reset = useCallback(async () => {
-        const today = getCurrentDate();
-        if (today.length > 0 && currentDate.length > 0 && today !== currentDate) {
-            await dispatch(setCurrentDate());
-            await dispatch(resetDailyData());
-        }
-    }, [currentDate, dispatch]);
-
-    const resetAndSchedule = useCallback(async () => {
-        await reset();
+    const schedule = useCallback(async () => {
         if (!remindersToggleEnabled) {
             await notifee.cancelAllNotifications();
             return;
@@ -59,7 +49,6 @@ const AppStack = (): JSX.Element => {
             if (ids.includes('daily')) {
                 await notifee.cancelAllNotifications();
             }
-
             scheduleNotification(
                 repeatInterval,
                 currentConsumtionMl,
@@ -83,18 +72,29 @@ const AppStack = (): JSX.Element => {
             );
             scheduleDailyNotification(nextDayNotif);
         }
-    }, [reset, currentConsumtionMl, desiredDailyConsumption, remindersToggleEnabled, fromTime, toTime, repeatInterval]);
+    }, [currentConsumtionMl, desiredDailyConsumption, remindersToggleEnabled, fromTime, toTime, repeatInterval]);
+
+    const resetAndSchedule = useCallback(async () => {
+        const today = getCurrentDate();
+        if (shouldReset(currentDate, today)) {
+            await dispatch(setCurrentDate());
+            await dispatch(resetDailyData());
+        }
+        await schedule();
+    }, [shouldReset, schedule, dispatch, getCurrentDate, setCurrentDate, resetDailyData, currentDate]);
 
     const handleNotificationAction = useCallback(
         async (notifId: string | undefined) => {
             const num = parseInt(notifId || '0');
-            if (!isNaN(num)) {
+            let calculated = 0;
+            if (shouldAddCoffee(notifId)) {
                 // coffee
                 await dispatch(addCoffeesConsumed(waterPerCoffeeCup));
-                calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl);
+                calculated = calculateIncrease(-waterPerCoffeeCup, desiredDailyConsumption, currentConsumtionMl);
+            } else {
+                await dispatch(addWaterConsumedSoFar(num));
+                calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
             }
-            await dispatch(addWaterConsumedSoFar(num));
-            const calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
             await dispatch(addWaterLevelSoFar(calculated));
         },
         [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
@@ -124,7 +124,7 @@ const AppStack = (): JSX.Element => {
                             },
                             {
                                 text: "Cancel",
-                                onPress: () => {},
+                                onPress: () => { },
                                 style: "cancel"
                             },
                         ],
@@ -144,7 +144,7 @@ const AppStack = (): JSX.Element => {
                             },
                             {
                                 text: "Cancel",
-                                onPress: () => {},
+                                onPress: () => { },
                                 style: "cancel"
                             },
                         ],
@@ -192,7 +192,7 @@ const AppStack = (): JSX.Element => {
         notifee.onBackgroundEvent(async ({ type, detail }) => {
             await resetAndSchedule();
             if (type === EventType.ACTION_PRESS) {
-                handleNotificationAction(detail?.pressAction?.id);
+                await handleNotificationAction(detail?.pressAction?.id);
             }
         });
     }, [handleNotificationAction, resetAndSchedule]);

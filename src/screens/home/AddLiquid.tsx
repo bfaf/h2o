@@ -4,7 +4,7 @@ import { Portal, FAB } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
 import { addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar } from '../../stores/redux/thunks/dailyConsumption';
-import { calculateIncrease } from '../../utils/hooks';
+import { calculateIncrease } from '../../utils/utils';
 import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
 import { settings } from '../../stores/redux/slices/settingSlice';
 
