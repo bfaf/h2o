@@ -2,13 +2,15 @@
  * @format
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, SafeAreaView, View, Text } from 'react-native';
 import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../stores/redux/store';
-import { setSettingDesiredDailyConsumption } from '../../stores/redux/thunks/dailyConsumption';
+import { addWaterLevelSoFar, setSettingDesiredDailyConsumption } from '../../stores/redux/thunks/dailyConsumption';
 import { useNavigation } from '@react-navigation/native';
+import { calculateIncrease } from '../../utils/utils';
+import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
 
 const styles = StyleSheet.create({
     container: {
@@ -62,6 +64,10 @@ export const Caluclator = (): JSX.Element => {
     const [calculatedWater, setCalculatedWater] = useState<number>(0);
     const [dialogVisible, setDialogVisible] = useState<boolean>(false);
 
+    const {
+        currentConsumtionMl,
+      } = useSelector(daylyConsumption);
+
     const calucalteRecommendedDailyAmount = (weight: string) => {
         const num = parseFloat(weight);
         if (isNaN(num)) {
@@ -72,10 +78,12 @@ export const Caluclator = (): JSX.Element => {
         setCalculatedWater(parseFloat(result.toFixed(2)));
     };
 
-    const onApplyPressed = async (amount: number) => {
+    const onApplyPressed = useCallback(async (amount: number) => {
         await dispatch(setSettingDesiredDailyConsumption(amount));
+        const calculated = calculateIncrease(0, amount, currentConsumtionMl);
+        await dispatch(addWaterLevelSoFar(calculated));
         setDialogVisible(true);
-    };
+    }, [currentConsumtionMl]);
 
     return (
         <SafeAreaView>
