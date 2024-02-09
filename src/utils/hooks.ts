@@ -5,7 +5,7 @@ import { daylyConsumption } from "../stores/redux/slices/daylyConsumptionSlice";
 import { settings } from "../stores/redux/slices/settingSlice";
 import notifee, { AndroidAction, AndroidNotificationSetting, EventType, IOSNotificationCategoryAction } from '@notifee/react-native';
 import { fetchCurrentDate, setCurrentDate } from "../stores/redux/thunks/currentDate";
-import { addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, fetchCoffeesConsumedSoFar, fetchSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, resetDailyData } from "../stores/redux/thunks/dailyConsumption";
+import { addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, fetchAllDailyConsumptionData, resetDailyData } from "../stores/redux/thunks/dailyConsumption";
 import { calculateIncrease, getCurrentDate, shouldAddCoffee, shouldReset } from "./utils";
 import { currentDateSelector } from "../stores/redux/slices/currentDateSlice";
 import { AppDispatch } from "../stores/redux/store";
@@ -193,11 +193,8 @@ export const useInitValues = () => {
                 }
 
                 await dispatch(fetchCurrentDate());
-                await dispatch(fetchSettingDesiredDailyConsumption());
+                await dispatch(fetchAllDailyConsumptionData());
                 await dispatch(fetchAllSettings());
-                await dispatch(fetchWaterConsumptionSoFar());
-                await dispatch(fetchWaterLevelSoFar());
-                await dispatch(fetchCoffeesConsumedSoFar());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);

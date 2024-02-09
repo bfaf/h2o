@@ -1,6 +1,6 @@
 import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { fetchSettingDesiredDailyConsumption, setSettingDesiredDailyConsumption, fetchWaterConsumptionSoFar, fetchWaterLevelSoFar, fetchCoffeesConsumedSoFar, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData } from "../thunks/dailyConsumption";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData } from "../thunks/dailyConsumption";
 
 interface DailyConsumptionState {
   currentConsumtionMl: number;
@@ -8,7 +8,8 @@ interface DailyConsumptionState {
   coffeesConsumed: number;
   glassesOfWaterConsumed: number;
   waterLevel: number;
-  errors: SerializedError | null;
+  dailyConsumptionErrors: SerializedError[];
+  dailyDataIsLoading: boolean;
 }
 
 export const daylyConsumptionInitialState = {
@@ -17,7 +18,8 @@ export const daylyConsumptionInitialState = {
   coffeesConsumed: 0,
   glassesOfWaterConsumed: 0,
   waterLevel: 200,
-  errors: null,
+  dailyConsumptionErrors: [],
+  dailyDataIsLoading: true,
 } as DailyConsumptionState;
 
 const daylyConsumptionSlice = createSlice({
@@ -25,23 +27,33 @@ const daylyConsumptionSlice = createSlice({
   initialState: daylyConsumptionInitialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchSettingDesiredDailyConsumption.fulfilled, (state, action) => {
-      state.desiredDailyConsumption = action.payload;
+    builder.addCase(fetchAllDailyConsumptionData.fulfilled, (state, action) => {
+      const { desiredDailyConsumption, waterLevel, currentConsumtionMl, coffeesConsumed, glassesOfWaterConsumed } = action.payload;
+      state.desiredDailyConsumption = desiredDailyConsumption;
+      state.waterLevel = waterLevel;
+      state.currentConsumtionMl = currentConsumtionMl;
+      state.coffeesConsumed = coffeesConsumed;
+      state.glassesOfWaterConsumed = glassesOfWaterConsumed;
+      state.dailyDataIsLoading = false;
     })
-      .addCase(fetchSettingDesiredDailyConsumption.rejected, (state, action) => {
-        state.errors = action.error;
+      .addCase(fetchAllDailyConsumptionData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+        state.dailyDataIsLoading = false;
+      })
+      .addCase(fetchAllDailyConsumptionData.pending, (state, _action) => {
+        state.dailyDataIsLoading = true;
       })
       .addCase(setSettingDesiredDailyConsumption.fulfilled, (state, action) => {
         state.desiredDailyConsumption = action.payload;
       })
-      .addCase(fetchWaterConsumptionSoFar.fulfilled, (state, action) => {
-        state.currentConsumtionMl = action.payload;
-      })
-      .addCase(fetchWaterLevelSoFar.fulfilled, (state, action) => {
-        state.waterLevel = action.payload;
-      })
-      .addCase(fetchCoffeesConsumedSoFar.fulfilled, (state, action) => {
-        state.coffeesConsumed = action.payload;
+      .addCase(setSettingDesiredDailyConsumption.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
       })
       .addCase(addCoffeesConsumed.fulfilled, (state, action) => {
         const { newCoffeeAmount, newDesiredWaterConsumption } = action.payload;
@@ -49,20 +61,44 @@ const daylyConsumptionSlice = createSlice({
         // state.currentConsumtionMl = newWaterAmount;
         state.coffeesConsumed = newCoffeeAmount;
       })
+      .addCase(addCoffeesConsumed.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
       .addCase(addWaterConsumedSoFar.fulfilled, (state, action) => {
         const { newWaterAmount, newGlassesAmount } = action.payload;
         state.currentConsumtionMl = newWaterAmount;
         state.glassesOfWaterConsumed = newGlassesAmount;
       })
+      .addCase(addWaterConsumedSoFar.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
       .addCase(addWaterLevelSoFar.fulfilled, (state, action) => {
         state.waterLevel = action.payload;
       })
+      .addCase(addWaterLevelSoFar.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
       .addCase(resetDailyData.fulfilled, (state, action) => {
         state.desiredDailyConsumption = action.payload;
-        state.waterLevel = 200;
-        state.currentConsumtionMl = 0;
-        state.coffeesConsumed = 0;
-        state.glassesOfWaterConsumed = 0;
+        state.waterLevel = daylyConsumptionInitialState.waterLevel;
+        state.currentConsumtionMl = daylyConsumptionInitialState.currentConsumtionMl;
+        state.coffeesConsumed = daylyConsumptionInitialState.coffeesConsumed;
+        state.glassesOfWaterConsumed = daylyConsumptionInitialState.glassesOfWaterConsumed;
+      })
+      .addCase(resetDailyData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
       })
   },
 });

@@ -27,25 +27,7 @@ export const Home = (): JSX.Element => {
   } = useSelector(daylyConsumption);
   const {
     femaleIcon,
-    errors
   } = useSelector(settings);
-  
-  useEffect(() => {
-    if (errors) {
-      Alert.alert(
-        'Errors Detected',
-        `Error(s) while loading the settings: ${errors}. Will load default settings`,
-        [
-          {
-            text: "OK",
-            onPress: () => { },
-            style: "cancel"
-          },
-        ],
-        { cancelable: false }
-      );
-    }
-  }, [errors]);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -15,7 +15,8 @@
     "compile": "tsc",
     "assemble:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
     "deploy:android": "adb -s EHT0220518000687 install ./android/app/build/outputs/apk/release/app-universal-release.apk",
-    "clean:android": "cd android && gradlew clean"
+    "clean:android": "cd android && gradlew clean",
+    "clean:assemble:deploy:android": "npm run clean:android && npm run assemble:release && npm run deploy:android"
   },
   "dependencies": {
     "@notifee/react-native": "^7.8.2",

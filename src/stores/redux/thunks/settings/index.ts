@@ -133,13 +133,15 @@ export const fetchAllSettings = createAsyncThunk(
             } else {
                 // console.log('At least one value not found');
                 // values.forEach((v, i) => console.log(i, v));
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, settingsInitialState.remindersToggleEnabled.toString());
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, settingsInitialState.waterPerCoffeeCup.toString());
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, settingsInitialState.repeatInterval.toString());
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, settingsInitialState.fromTime);
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, settingsInitialState.toTime); 
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, settingsInitialState.femaleIcon.toString());
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(settingsInitialState.waterAmounts));
+                await Promise.all([
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, settingsInitialState.remindersToggleEnabled.toString()),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, settingsInitialState.waterPerCoffeeCup.toString()),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, settingsInitialState.repeatInterval.toString()),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, settingsInitialState.fromTime),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, settingsInitialState.toTime),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, settingsInitialState.femaleIcon.toString()),
+                    AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(settingsInitialState.waterAmounts))
+                ]);
                 return settingsInitialState;
             }
         } catch (err) {
