@@ -62,6 +62,7 @@ export const Home = (): JSX.Element => {
           key="top"
           source={femaleIcon ? require('../../images/female-200.png') : require('../../images/male-200.png')}
           style={styles.image}
+          testID='personImage'
         />
         <RenderMaskedView waterLevel={waterLevel} />
       </View>

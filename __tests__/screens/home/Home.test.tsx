@@ -1,22 +1,26 @@
 import 'react-native';
 import React from 'react';
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals';
 import { renderWithProviders } from '../../../utils/test-utils';
 
 import { Home } from '../../../src/screens/home';
 import { getPreloadedState } from '../../../utils/utils';
 import { fireEvent, within } from '@testing-library/react-native';
 
-import AsynStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE } from '../../../src/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, STORE_KEY_SETTINGS_HUMAN_ICON } from '../../../src/constants';
 
 jest.useFakeTimers();
 
 describe('Home Screen', () => {
 
   beforeEach(async () => {
-    await AsynStorage.clear();
-    await AsynStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '1000');
+    await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '1000');
+  });
+
+  afterEach(async () => {
+    await AsyncStorage.clear();
+    
   });
 
   it('Renders properly with 0 ml', async () => {
@@ -109,4 +113,26 @@ describe('Home Screen', () => {
     expect(res).toBeDefined();
   });
 
+  it('renders female image', async () => {
+    const preloadedState = getPreloadedState({});
+
+    const screen = renderWithProviders(<Home />, { preloadedState });
+    const image = await screen.findByTestId('personImage');
+
+    expect(image.props.source.testUri).toContain('/female-200.png');
+  });
+
+  it('renders male image', async () => {
+    await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, 'false');
+    const preloadedState = getPreloadedState({
+      settingsOverloads: {
+        femaleIcon: false
+      }
+    });
+
+    const screen = renderWithProviders(<Home />, { preloadedState });
+    const image = await screen.findByTestId('personImage');
+
+    expect(image.props.source.testUri).toContain('/male-200.png');
+  });
 });
