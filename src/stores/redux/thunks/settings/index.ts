@@ -1,7 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_SETTINGS_FROM_DATE, STORE_KEY_SETTINGS_HUMAN_ICON, STORE_KEY_SETTINGS_REMINDER_SWITCH, STORE_KEY_SETTINGS_REPEAT_INTERVAL, STORE_KEY_SETTINGS_TO_DATE, STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP } from "../../../../constants";
+import { STORE_KEY_SETTINGS_FROM_DATE, STORE_KEY_SETTINGS_HUMAN_ICON, STORE_KEY_SETTINGS_REMINDER_SWITCH, STORE_KEY_SETTINGS_REPEAT_INTERVAL, STORE_KEY_SETTINGS_TO_DATE, STORE_KEY_SETTINGS_WATER_AMOUNTS, STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP } from "../../../../constants";
+import { settingsInitialState } from "../../slices/settingSlice";
 
 export const setReminderSwitch = createAsyncThunk(
     'settings/setReminderSwitch',
@@ -75,6 +76,35 @@ export const setHumanIcon = createAsyncThunk(
     }
 );
 
+export const addWaterAmount = createAsyncThunk(
+    'settings/addWaterAmount',
+    async (waterAmount: string, { rejectWithValue }) => {
+        try {
+            const waterAmounts: string[] = JSON.parse(await AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS) || '[]'); // always should have values at this point
+            const newWaterAmounts = [...waterAmounts];
+            newWaterAmounts.push(waterAmount);
+            await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(newWaterAmounts));
+            return newWaterAmounts;
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+);
+
+export const removeWaterAmount = createAsyncThunk(
+    'settings/removeWaterAmount',
+    async (waterAmount: string, { rejectWithValue }) => {
+        try {
+            const waterAmounts: string[] = JSON.parse(await AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS) || '[]'); // always should have values at this point
+            const newWaterAmounts = waterAmounts.filter((amount) => amount !== waterAmount);
+            await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(newWaterAmounts));
+            return newWaterAmounts;
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+);
+
 export const fetchAllSettings = createAsyncThunk(
     'settings/fetchAllSettings',
     async (_, { rejectWithValue }) => {
@@ -86,6 +116,7 @@ export const fetchAllSettings = createAsyncThunk(
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_FROM_DATE),
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_TO_DATE),
                 AsyncStorage.getItem(STORE_KEY_SETTINGS_HUMAN_ICON),
+                AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS),
             ]);
             if (values.every(val => val != null)) {
                 // console.log('All values found');
@@ -96,27 +127,20 @@ export const fetchAllSettings = createAsyncThunk(
                     repeatInterval: Number(values[2]),
                     fromTime: values[3] != null ? values[3] : new Date(2024, 1, 1, 9, 0, 0).toISOString(),
                     toTime: values[4] != null ? values[4] : new Date(2024, 1, 1, 18, 0, 0).toISOString(),
-                    femaleIcon: values[5] === 'true'
+                    femaleIcon: values[5] === 'true',
+                    waterAmounts: JSON.parse(values[6]!),
                 };
             } else {
                 // console.log('At least one value not found');
                 // values.forEach((v, i) => console.log(i, v));
-                const fromTime = new Date(2024, 1, 1, 9, 0, 0).toISOString();
-                const toTime = new Date(2024, 1, 1, 18, 0, 0).toISOString();
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, 'true');
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, '200');
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, '60');
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, fromTime);
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, toTime); 
-                await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, 'true'); 
-                return {
-                    remindersToggleEnabled: true,
-                    waterPerCoffeeCup: 200,
-                    repeatInterval: 60,
-                    fromTime,
-                    toTime,
-                    femaleIcon: true
-                };
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, settingsInitialState.remindersToggleEnabled.toString());
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, settingsInitialState.waterPerCoffeeCup.toString());
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, settingsInitialState.repeatInterval.toString());
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, settingsInitialState.fromTime);
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, settingsInitialState.toTime); 
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, settingsInitialState.femaleIcon.toString());
+                await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(settingsInitialState.waterAmounts));
+                return settingsInitialState;
             }
         } catch (err) {
             return rejectWithValue(err);

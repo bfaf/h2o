@@ -1,4 +1,5 @@
 import notifee, {
+  AndroidAction,
     AndroidImportance,
     IntervalTrigger,
     RepeatFrequency,
@@ -6,12 +7,12 @@ import notifee, {
     TimestampTrigger,
     TriggerType,
   } from '@notifee/react-native';
-import { NOTIFICATION_QUICK_ACTIONS } from '../constants';
   
 export const scheduleNotification = async (
     interval: number,
     drankSoFarMl: number,
     totalMl: number,
+    notificationActions: AndroidAction[]
   ) => {
     // Create a time-based trigger
     const trigger: IntervalTrigger = {
@@ -35,7 +36,7 @@ export const scheduleNotification = async (
           body: `Drank ${drankSoFarMl}ml so far out of ${totalMl}ml`,
           android: {
             channelId,
-            actions: NOTIFICATION_QUICK_ACTIONS,
+            actions: notificationActions,
           },
           ios: {
             categoryId: 'h2o-actions',
@@ -49,7 +50,7 @@ export const scheduleNotification = async (
     }
   };
 
-  export const scheduleDailyNotification = async (date: Date) => {
+  export const scheduleDailyNotification = async (date: Date, notificationActions: AndroidAction[]) => {
     // Create a time-based trigger
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
@@ -74,7 +75,7 @@ export const scheduleNotification = async (
           body: 'Please drink water',
           android: {
             channelId,
-            actions: NOTIFICATION_QUICK_ACTIONS,
+            actions: notificationActions,
           },
           ios: {
             categoryId: 'h2o-actions',

@@ -7,19 +7,21 @@ interface CurrentDateState {
     currentDate: string;
 }
 
+export const currentDateInitialState = {
+    currentDate: getCurrentDate(),
+} as CurrentDateState;
+
 const currentDateSlice = createSlice({
     name: "currentDate",
-    initialState: {
-        currentDate: getCurrentDate(),
-    } as CurrentDateState,
+    initialState: currentDateInitialState,
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(fetchCurrentDate.fulfilled, (state, action) => {
             state.currentDate = action.payload;
         })
-        .addCase(setCurrentDate.fulfilled, (state, action) => {
-            state.currentDate = action.payload;
-        })
+            .addCase(setCurrentDate.fulfilled, (state, action) => {
+                state.currentDate = action.payload;
+            })
     }
 });
 

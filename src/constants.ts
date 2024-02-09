@@ -15,34 +15,4 @@ export const STORE_KEY_SETTINGS_REMINDER_SWITCH = 'settings.reminder.switch';
 export const STORE_KEY_SETTINGS_FROM_DATE = 'settings.reminder.fromDate';
 export const STORE_KEY_SETTINGS_TO_DATE = 'settings.reminder.toDate';
 export const STORE_KEY_SETTINGS_HUMAN_ICON = 'settings.humanIcon';
-
-export const NOTIFICATION_QUICK_ACTIONS = [
-    {
-        id: '200',
-        title: '200 ml',
-        pressAction: {
-            id: '200',
-        },
-    },
-    {
-        id: '300',
-        title: '300 ml',
-        pressAction: {
-            id: '300',
-        },
-    },
-    {
-        id: '500',
-        title: '500 ml',
-        pressAction: {
-            id: '500',
-        },
-    },
-    {
-        id: 'coffee',
-        title: 'Coffee',
-        pressAction: {
-            id: 'coffee',
-        },
-    },
-];
+export const STORE_KEY_SETTINGS_WATER_AMOUNTS = 'settings.waterAmounts';

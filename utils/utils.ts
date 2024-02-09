@@ -1,5 +1,7 @@
+import { currentDateInitialState } from "../src/stores/redux/slices/currentDateSlice";
+import { daylyConsumptionInitialState } from "../src/stores/redux/slices/daylyConsumptionSlice";
+import { settingsInitialState } from "../src/stores/redux/slices/settingSlice";
 import { RootState } from "../src/stores/redux/store";
-import { getCurrentDate } from "../src/utils/utils";
 
 type PreloadedStateOverloads = {
     daylyConsumptionOverloads?: any;
@@ -10,26 +12,15 @@ type PreloadedStateOverloads = {
 export const getPreloadedState = ({ daylyConsumptionOverloads, settingsOverloads, currentDateOverloads }: PreloadedStateOverloads): RootState => {
     return {
         daylyConsumption: {
-            currentConsumtionMl: 0,
-            desiredDailyConsumption: 3500,
-            coffeesConsumed: 0,
-            glassesOfWaterConsumed: 0,
-            waterLevel: 200,
-            errors: null,
+            ...daylyConsumptionInitialState,
             ...daylyConsumptionOverloads
         },
         settings: {
-            remindersToggleEnabled: true,
-            waterPerCoffeeCup: 200,
-            repeatInterval: 60,
-            fromTime: new Date(2024, 1, 1, 9, 0, 0).toISOString(),
-            toTime: new Date(2024, 1, 1, 18, 0, 0).toISOString(),
-            femaleIcon: true,
-            errors: null,
+            ...settingsInitialState,
             ...settingsOverloads
         },
         currentDate: {
-            currentDate: getCurrentDate(),
+            ...currentDateInitialState,
             ...currentDateOverloads
         }
     } as RootState;
