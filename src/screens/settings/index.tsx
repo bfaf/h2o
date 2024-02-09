@@ -202,6 +202,9 @@ export const Settings = (): JSX.Element => {
             );
             return;
         }
+        if (amount.length === 0) {
+            return;
+        }
         await dispatch(addWaterAmount(amount));
         setText("");
     }, [sortedWaterAmounts]);
