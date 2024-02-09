@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     applyButtonContent: {
         fontSize: 30,
         fontWeight: '800',
+        verticalAlign: 'bottom'
     },
     weightInput: {
         flex: 2,

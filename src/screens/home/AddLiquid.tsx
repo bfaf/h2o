@@ -1,8 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Portal, FAB } from 'react-native-paper';
-import { useSelector } from 'react-redux';
-import { settings } from '../../stores/redux/slices/settingSlice';
 import { useCreateAction, useSortedWaterAmounts } from '../../utils/hooks';
 
 export const AddLiquid = () => {

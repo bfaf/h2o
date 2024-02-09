@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     applyButtonContent: {
         fontSize: 30,
         fontWeight: '800',
+        verticalAlign: 'bottom'
     },
     recommendationContainer: {
         display: 'flex',
@@ -69,6 +70,10 @@ export const Caluclator = (): JSX.Element => {
       } = useSelector(daylyConsumption);
 
     const calucalteRecommendedDailyAmount = (weight: string) => {
+        if (weight.length === 0) {
+            setText(weight);
+            return;
+        }
         const num = parseFloat(weight);
         if (isNaN(num)) {
             return;
