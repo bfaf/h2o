@@ -172,6 +172,9 @@ export const Settings = (): JSX.Element => {
     };
 
     const onAddAmount = useCallback(async (amount: string) => {
+        if (amount.length === 0) {
+            return;
+        }
         if (sortedWaterAmounts.includes(amount)) {
             Alert.alert(
                 'Duplicate amount',
@@ -200,9 +203,6 @@ export const Settings = (): JSX.Element => {
                 ],
                 { cancelable: false }
             );
-            return;
-        }
-        if (amount.length === 0) {
             return;
         }
         await dispatch(addWaterAmount(amount));
