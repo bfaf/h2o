@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
 import { settings } from './stores/redux/slices/settingSlice';
 import { ActivityIndicator } from 'react-native-paper';
-import { Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,7 +59,9 @@ const AppStack = (): JSX.Element => {
 
     if (dailyDataIsLoading || settingsDataIsLoading) {
         return (
-            <ActivityIndicator size='large' />
+            <View style={{ flex: 1, marginVertical: 'auto', justifyContent: 'center' }}>
+                <ActivityIndicator size='large' />
+            </View>
         );
     }
 
