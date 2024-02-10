@@ -6,11 +6,12 @@ import { settings } from "../stores/redux/slices/settingSlice";
 import notifee, { AndroidAction, AndroidNotificationSetting, EventType, IOSNotificationCategoryAction } from '@notifee/react-native';
 import { fetchCurrentDate, setCurrentDate } from "../stores/redux/thunks/currentDate";
 import { addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, fetchAllDailyConsumptionData, resetDailyData } from "../stores/redux/thunks/dailyConsumption";
-import { calculateIncrease, getCurrentDate, shouldAddCoffee, shouldReset } from "./utils";
+import { biometricsLogin, calculateIncrease, getCurrentDate, shouldAddCoffee, shouldReset } from "./utils";
 import { currentDateSelector } from "../stores/redux/slices/currentDateSlice";
 import { AppDispatch } from "../stores/redux/store";
 import { Alert, AppState } from "react-native";
 import { fetchAllSettings } from "../stores/redux/thunks/settings";
+import ReactNativeBiometrics, { BiometryTypes } from "react-native-biometrics";
 
 export const useSchedule = () => {
     const {
@@ -125,9 +126,14 @@ export const useAppState = () => {
     const resetAndSchedule = useResetAndSchedule();
 
     return useEffect(() => {
-        const subscription = AppState.addEventListener('change', _nextAppState => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'active') {
+                biometricsLogin();
+            }
             resetAndSchedule();
+            
         });
+        biometricsLogin();
         resetAndSchedule(); // When app is launched if OS closed it
 
         return () => {
