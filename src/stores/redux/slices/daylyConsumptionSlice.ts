@@ -2,7 +2,7 @@ import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData } from "../thunks/dailyConsumption";
 
-interface DailyConsumptionState {
+export interface DailyConsumptionState {
   currentConsumtionMl: number;
   desiredDailyConsumption: number;
   coffeesConsumed: number;

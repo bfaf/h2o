@@ -3,7 +3,7 @@ import { RootState } from "../store";
 import { fetchCurrentDate, setCurrentDate } from "../thunks/currentDate";
 import { getCurrentDate } from "../../../utils/utils";
 
-interface CurrentDateState {
+export interface CurrentDateState {
     currentDate: string;
 }
 

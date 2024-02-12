@@ -2,7 +2,7 @@ import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { addWaterAmount, fetchAllSettings, removeWaterAmount, setFromDate, setHumanIcon, setReminderSwitch, setRepeatInterval, setToDate, setWaterPerCoffeeCup } from "../thunks/settings";
 
-interface SettingsState {
+export interface SettingsState {
     remindersToggleEnabled: boolean;
     waterPerCoffeeCup: number;
     fromTime: string;

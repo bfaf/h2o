@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { scheduleNotification, scheduleDailyNotification } from "./notifications";
 import { useDispatch, useSelector } from "react-redux";
 import { daylyConsumption } from "../stores/redux/slices/daylyConsumptionSlice";
@@ -10,7 +10,7 @@ import { biometricsLogin, calculateIncrease, getCurrentDate, shouldAddCoffee, sh
 import { currentDateSelector } from "../stores/redux/slices/currentDateSlice";
 import { AppDispatch } from "../stores/redux/store";
 import { Alert, AppState } from "react-native";
-import { fetchAllSettings } from "../stores/redux/thunks/settings";
+import { fetchAllSettings, fetchAllSettingsDb } from "../stores/redux/thunks/settings";
 import ReactNativeBiometrics, { BiometryTypes } from "react-native-biometrics";
 
 export const useSchedule = () => {
@@ -124,16 +124,39 @@ export const useCreateAction = () => {
 
 export const useAppState = () => {
     const resetAndSchedule = useResetAndSchedule();
+    const [isBiometrcsShown, setIsBiometrcsShown] = useState<boolean>(false);
 
     return useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
-            if (nextAppState === 'active') {
-                biometricsLogin();
+            const biometricsDisabled = true;
+            if (!biometricsDisabled && nextAppState === 'active' && !isBiometrcsShown) {
+                const test = async () => {
+                    let result: {
+                        success: boolean;
+                        error: string | undefined;
+                    } | undefined;
+                    try {
+                        setIsBiometrcsShown(true);
+                        result = await biometricsLogin();
+                    } catch(error: any) {
+                        result = {
+                            success: false,
+                            error
+                        }
+                    } finally {
+                        // dispatch something to the store so content won't be displayed
+                        // Alert.alert(
+                        //     'Errors Detected',
+                        //     `Success: ${result?.success}, Error: ${result?.error}`,
+                        // );
+                    }
+                }
+                test();
+            } else if (nextAppState === 'background') {
+                setIsBiometrcsShown(false);
             }
             resetAndSchedule();
-            
         });
-        biometricsLogin();
         resetAndSchedule(); // When app is launched if OS closed it
 
         return () => {
@@ -198,9 +221,10 @@ export const useInitValues = () => {
                     );
                 }
 
+                await dispatch(fetchAllSettings());
                 await dispatch(fetchCurrentDate());
                 await dispatch(fetchAllDailyConsumptionData());
-                await dispatch(fetchAllSettings());
+                // await dispatch(fetchAllSettings());
             } catch (err) {
                 // need to use common way to display errors
                 console.log(err);

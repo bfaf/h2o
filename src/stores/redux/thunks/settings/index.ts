@@ -1,151 +1,152 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_SETTINGS_FROM_DATE, STORE_KEY_SETTINGS_HUMAN_ICON, STORE_KEY_SETTINGS_REMINDER_SWITCH, STORE_KEY_SETTINGS_REPEAT_INTERVAL, STORE_KEY_SETTINGS_TO_DATE, STORE_KEY_SETTINGS_WATER_AMOUNTS, STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP } from "../../../../constants";
-import { settingsInitialState } from "../../slices/settingSlice";
+import {  settingsInitialState } from "../../slices/settingSlice";
+import { getDBConnection, createTable, getData, insertDataToTable, ColumnConfig, shouldPopulateInitially } from "../../../../utils/db-service";
+import { RootState } from "../../store";
+import { updateSettings } from "../../../../utils/utils";
+
+const TABLE_NAME = 'settings';
+
+const columnConfig: ColumnConfig[] = [
+    {
+        name: 'remindersToggleEnabled',
+        type: 'INTEGER',
+        canBeNull: false
+    },
+    {
+        name: 'waterPerCoffeeCup',
+        type: 'INTEGER',
+        canBeNull: false
+    },
+    {
+        name: 'repeatInterval',
+        type: 'INTEGER',
+        canBeNull: false
+    },
+    {
+        name: 'femaleIcon',
+        type: 'INTEGER',
+        canBeNull: false
+    },
+    {
+        name: 'waterAmounts',
+        type: 'TEXT',
+        canBeNull: false
+    },
+    {
+        name: 'fromTime',
+        type: 'TEXT',
+        canBeNull: false
+    },
+    {
+        name: 'toTime',
+        type: 'TEXT',
+        canBeNull: false
+    },
+    {
+        name: 'settingsErrors',
+        type: 'TEXT',
+        canBeNull: true
+    },
+    {
+        name: 'settingsDataIsLoading',
+        type: 'INTEGER',
+        canBeNull: false
+    },
+];
 
 export const setReminderSwitch = createAsyncThunk(
     'settings/setReminderSwitch',
-    async (value: boolean, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, value.toString());
-            return value;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: boolean, params) => {
+        return await updateSettings(value, 'remindersToggleEnabled', params);
     }
 );
 
 export const setWaterPerCoffeeCup = createAsyncThunk(
     'settings/setWaterPerCoffeeCup',
-    async (value: number, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, value.toString());
-            return value;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: number, params) => {
+        return await updateSettings(value, 'waterPerCoffeeCup', params);
     }
 );
 
 export const setRepeatInterval = createAsyncThunk(
     'settings/setRepeatInterval',
-    async (value: number, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, value.toString());
-            return value;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: number, params ) => {
+        return await updateSettings(value, 'repeatInterval', params);
     }
 );
 
 export const setFromDate = createAsyncThunk(
     'settings/setFromDate',
-    async (value: string, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, value);
-            return value;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: string, params) => {
+        return await updateSettings(value, 'fromTime', params);
     }
 );
 
 export const setToDate = createAsyncThunk(
     'settings/setToDate',
-    async (value: string, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, value);
-            return value;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: string, params) => {
+        return await updateSettings(value, 'toTime', params);
     }
 );
 
 export const setHumanIcon = createAsyncThunk(
     'settings/setHumanIcon',
-    async (isFemaleIcon: boolean, { rejectWithValue }) => {
-        try {
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, isFemaleIcon.toString());
-            return isFemaleIcon;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (value: boolean, params) => {
+        return await updateSettings(value, 'femaleIcon', params);
     }
 );
 
 export const addWaterAmount = createAsyncThunk(
     'settings/addWaterAmount',
-    async (waterAmount: string, { rejectWithValue }) => {
-        try {
-            const waterAmounts: string[] = JSON.parse(await AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS) || '[]'); // always should have values at this point
-            const newWaterAmounts = [...waterAmounts];
-            newWaterAmounts.push(waterAmount);
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(newWaterAmounts));
-            return newWaterAmounts;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (waterAmount: string, params) => {
+        const state = params.getState() as RootState;
+        const newWaterAmounts = [...state.settings.waterAmounts];
+        newWaterAmounts.push(waterAmount);
+        return await updateSettings(newWaterAmounts, 'waterAmounts', params);
     }
 );
 
 export const removeWaterAmount = createAsyncThunk(
     'settings/removeWaterAmount',
-    async (waterAmount: string, { rejectWithValue }) => {
-        try {
-            const waterAmounts: string[] = JSON.parse(await AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS) || '[]'); // always should have values at this point
-            const newWaterAmounts = waterAmounts.filter((amount) => amount !== waterAmount);
-            await AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(newWaterAmounts));
-            return newWaterAmounts;
-        } catch (err) {
-            return rejectWithValue(err);
-        }
+    async (waterAmount: string, params) => {
+        const state = params.getState() as RootState;
+        const newWaterAmounts = state.settings.waterAmounts.filter((amount) => amount !== waterAmount);
+        return await updateSettings(newWaterAmounts, 'waterAmounts', params);
     }
 );
 
 export const fetchAllSettings = createAsyncThunk(
     'settings/fetchAllSettings',
     async (_, { rejectWithValue }) => {
+        let db;
         try {
-            const values = await Promise.all([
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_REMINDER_SWITCH),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_FROM_DATE),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_TO_DATE),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_HUMAN_ICON),
-                AsyncStorage.getItem(STORE_KEY_SETTINGS_WATER_AMOUNTS),
-            ]);
-            if (values.every(val => val != null)) {
-                // console.log('All values found');
-                // values.forEach((v, i) => console.log(i, v));
-                return {
-                    remindersToggleEnabled: values[0] === 'true',
-                    waterPerCoffeeCup: Number(values[1]),
-                    repeatInterval: Number(values[2]),
-                    fromTime: values[3] != null ? values[3] : new Date(2024, 1, 1, 9, 0, 0).toISOString(),
-                    toTime: values[4] != null ? values[4] : new Date(2024, 1, 1, 18, 0, 0).toISOString(),
-                    femaleIcon: values[5] === 'true',
-                    waterAmounts: JSON.parse(values[6]!),
-                };
-            } else {
-                // console.log('At least one value not found');
-                // values.forEach((v, i) => console.log(i, v));
-                await Promise.all([
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_REMINDER_SWITCH, settingsInitialState.remindersToggleEnabled.toString()),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_PER_COFFEE_CUP, settingsInitialState.waterPerCoffeeCup.toString()),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_REPEAT_INTERVAL, settingsInitialState.repeatInterval.toString()),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_FROM_DATE, settingsInitialState.fromTime),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_TO_DATE, settingsInitialState.toTime),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_HUMAN_ICON, settingsInitialState.femaleIcon.toString()),
-                    AsyncStorage.setItem(STORE_KEY_SETTINGS_WATER_AMOUNTS, JSON.stringify(settingsInitialState.waterAmounts))
-                ]);
-                return settingsInitialState;
+            db = await getDBConnection();
+            await createTable(db, TABLE_NAME, columnConfig);
+            let results = await getData(db, TABLE_NAME, columnConfig);
+            const populateInitially = shouldPopulateInitially(results);
+            if (populateInitially) {
+                await insertDataToTable(db, TABLE_NAME, settingsInitialState);
+                results = await getData(db, TABLE_NAME, columnConfig);
             }
+
+            const data = results[0].rows.item(0);
+            const settings: typeof settingsInitialState = {
+                remindersToggleEnabled: data['remindersToggleEnabled'] === 1,
+                waterPerCoffeeCup: data['waterPerCoffeeCup'],
+                repeatInterval: data['repeatInterval'],
+                fromTime: data['fromTime'],
+                toTime: data['toTime'],
+                femaleIcon: data['femaleIcon'] === 1,
+                waterAmounts: JSON.parse(data['waterAmounts']),
+                settingsErrors: [],
+                settingsDataIsLoading: data['settingsDataIsLoading'] === 1,
+            };
+            return settings;
         } catch (err) {
             return rejectWithValue(err);
+        } finally {
+            await db?.close();
         }
     }
 );

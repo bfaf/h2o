@@ -1,5 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GetThunkAPI } from "@reduxjs/toolkit/dist/createAsyncThunk";
+import { Alert } from "react-native";
 import ReactNativeBiometrics, { BiometryTypes } from "react-native-biometrics";
+import { SettingsState } from "../stores/redux/slices/settingSlice";
+import { updateValue } from "./db-service";
+import { DailyConsumptionState } from "../stores/redux/slices/daylyConsumptionSlice";
+import { CurrentDateState } from "../stores/redux/slices/currentDateSlice";
 
 export const getCurrentDate = (): string => {
     const today = new Date();
@@ -44,40 +50,19 @@ export const biometricsLogin = async () => {
     const rnBiometrics = new ReactNativeBiometrics({ allowDeviceCredentials: true })
     const { available, biometryType } = await rnBiometrics.isSensorAvailable()
     if (available) {
-        if (biometryType === BiometryTypes.TouchID) {
-            let { success, error } = await rnBiometrics.simplePrompt({
-                promptMessage: 'Sign in with TouchID or PIN',
-                cancelButtonText: 'Close',
-            });
-            return { success, error };
-        } else if (biometryType === BiometryTypes.Biometrics) {
-            let { success, error } = await rnBiometrics.simplePrompt({
-                promptMessage: 'Sign in with fingerprint or PIN',
-                cancelButtonText: 'Close',
-            });
-            return { success, error };
-        } else if (biometryType === BiometryTypes.FaceID) {
-            let userId = await AsyncStorage.getItem('USER_ID');
-            if (userId == null) {
-                userId = 'some-user-id-for-this-device';
-                await AsyncStorage.setItem('USER_ID', 'some-user-id-for-this-device');
-                const { publicKey } = await rnBiometrics.createKeys();
-                await AsyncStorage.setItem('FACE_ID_KEY', publicKey);
-                console.log('KRASIII publicKey', publicKey);
-            }
-
-            const timestamp = Math.round(
-                new Date().getTime() / 1000,
-            ).toString();
-            const payload = `${userId}__${timestamp}`;
-            const { success, signature } = await rnBiometrics.createSignature(
-                {
-                    promptMessage: 'Sign in',
-                    payload,
-                },
-            );
-            console.log('KRASIII signature', signature);
-            
-        }
+        let { success, error } = await rnBiometrics.simplePrompt({ promptMessage: 'Login securely' });
+        return { success, error };
     }
 }
+
+export const updateSettings = async (value: any, prop: any, params: GetThunkAPI<any>) => {
+    return await updateValue<SettingsState>(value, prop, 'settings', 'settings', params);
+};
+
+export const updateDailyConsumption = async (value: any, prop: any, params: GetThunkAPI<any>) => {
+    return await updateValue<DailyConsumptionState>(value, prop, 'daylyConsumption', 'daylyConsumption', params);
+};
+
+export const updateCurrentDate = async (value: any, prop: any, params: GetThunkAPI<any>) => {
+    return await updateValue<CurrentDateState>(value, prop, 'currentDate', 'currentDate', params);
+};
