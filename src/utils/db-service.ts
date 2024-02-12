@@ -36,8 +36,8 @@ export const deleteTable = async (db: SQLiteDatabase, tableName: string) => {
 };
 
 export const insertDataToTable = async (db: SQLiteDatabase, tableName: string, data: Record<string, any>) => {
-    const columns = ['rowid'];
-    const values = ['0'];
+    const columns = [];
+    const values = [];
     let key: keyof (typeof data);
     for (key in data) {
         columns.push(key.toString());
@@ -53,24 +53,45 @@ export const insertDataToTable = async (db: SQLiteDatabase, tableName: string, d
             values.push(`${data[key]}`);
         }
     }
+    
     const insertQuery =
         `INSERT OR REPLACE INTO ${tableName}(${columns.join(',')}) values(` + values.join(',') + ')';
 
-    return db.executeSql(insertQuery);
+    return await db.executeSql(insertQuery);
+};
+
+export const updateTable = async (db: SQLiteDatabase, tableName: string, data: Record<string, any>) => {
+    const dataPairs = [];
+    let key: keyof (typeof data);
+    for (key in data) {
+        if (typeof (data[key]) === 'boolean') {
+            dataPairs.push(`${key} = ${data[key] === true ? 1 : 0}`);
+        } else if (typeof (data[key]) === 'string') {
+            dataPairs.push(`${key} = '${data[key]}'`);
+        } else if (data[key].toString().indexOf(',') >= 0) {
+            dataPairs.push(`${key} = '${JSON.stringify(data[key])}'`);
+        } else if (data[key].toString().length === 0) {
+            dataPairs.push(`${key} = ''`);
+        } else {
+            dataPairs.push(`${key} = ${data[key]}`);
+        }
+    }
+    const updateQuery = `UPDATE ${tableName} SET ${dataPairs.join(', ')} WHERE rowid = 0`;
+
+    return await db.executeSql(updateQuery);
 };
 
 export const shouldPopulateInitially = (results: [ResultSet]) => results[0].rows.length === 0;
 
-export const updateValue = async <T>(value: any, prop: keyof T, stateProp: keyof RootState, tableName: string, { getState, rejectWithValue }: GetThunkAPI<any>) => {
+export const updateValue = async <T>(value: any, prop: keyof T, stateProp: keyof RootState, tableName: string, { getState, rejectWithValue, fulfillWithValue }: GetThunkAPI<any>) => {
     let db = undefined;
     try {
         db = await getDBConnection();
-        const state = getState() as RootState;
         const newValues = {
-            ...state[stateProp],
             [prop]: value
         };
-        await insertDataToTable(db, tableName, newValues);
+
+        await updateTable(db, tableName, newValues);
         return value;
     } catch (err) {
         return rejectWithValue(err);
