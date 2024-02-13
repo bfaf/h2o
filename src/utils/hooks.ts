@@ -1,3 +1,4 @@
+import React from 'react';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { scheduleNotification, scheduleDailyNotification } from "./notifications";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,8 +11,8 @@ import { biometricsLogin, calculateIncrease, getCurrentDate, shouldAddCoffee, sh
 import { currentDateSelector } from "../stores/redux/slices/currentDateSlice";
 import { AppDispatch } from "../stores/redux/store";
 import { Alert, AppState } from "react-native";
-import { fetchAllSettings, fetchAllSettingsDb } from "../stores/redux/thunks/settings";
-import ReactNativeBiometrics, { BiometryTypes } from "react-native-biometrics";
+import { fetchAllSettings } from "../stores/redux/thunks/settings";
+import { lineDataItem } from "react-native-gifted-charts";
 
 export const useSchedule = () => {
     const {
@@ -309,4 +310,104 @@ export const useNotificationActions = () => {
 
         return actions;
     }, [sortedWaterAmounts]);
+};
+
+type HistoryDataConfig = {
+    data: lineDataItem[];
+    spacing: number,
+};
+
+export const useDataSubset = (entries: number) => {
+    const { historyData } = useSelector(daylyConsumption);
+    const data = [];
+    const limit = entries === 180 ? 0 : (historyData.length - entries)
+    for (let i = historyData.length - 1; i >= limit; i--) {
+        data.push(historyData[i]);
+    }
+    data.reverse();
+
+    return data[0] ? data : [];
+};
+
+export const useFormatedData = (entries: number, formatFn: (timestamp: number) => FormatFn, lcomp: (v: string) => React.JSX.Element) => {
+    const data = useDataSubset(entries);
+    const weekNumbers: string[] = [];
+    const formatedData = data.map(data => {
+        const weekNumber = formatFn(data.createdAt);
+        if (weekNumbers.includes(weekNumber.key)) {
+            return {
+                value: data.currentConsumtionMl,
+                hideDataPoint: true,
+            };
+        } else {
+            weekNumbers.push(weekNumber.key);
+            return {
+                value: data.currentConsumtionMl,
+                labelComponent: () => lcomp(weekNumber.display),
+            };
+        }
+    });
+
+    return formatedData;
+};
+
+type FormatFn = {
+    key: string;
+    display: string;
+};
+type HistoryDataTimeFilter = 'week' | 'month' | '3months' | '6months';
+export const useHistoryData = (period: HistoryDataTimeFilter, lcomp: (v: string) => React.JSX.Element): HistoryDataConfig => {
+    switch(period) {
+        case 'week': {
+            const formatFn = (timestamp: number) => {
+                const d = new Date(timestamp);
+                const date = d.toLocaleDateString('en-UK', { weekday: 'short'}).replace(/,.+/, '');
+        
+                return { key: date, display: date };
+            }
+            const data = useFormatedData(7, formatFn, lcomp)
+            return {
+                data,
+                spacing: 45,
+            }
+        }
+        case 'month': {
+            const formatFn = (timestamp: number) => {
+                const d = new Date(timestamp);
+                const onejan = new Date(d.getFullYear(), 0, 1);
+                const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+                const display = d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short'});
+                return { key: `W${weekNum}`, display };
+            }
+
+            return {
+                data: useFormatedData(30, formatFn, lcomp),
+                spacing: 11,
+            }
+        }
+        case '3months': {
+            const formatFn = (timestamp: number) => {
+                const d = new Date(timestamp);
+                const formated = d.toLocaleDateString('en-UK', { month: 'short' });
+                return { key: formated, display: formated };
+            };
+
+            return {
+                data: useFormatedData(90, formatFn, lcomp),
+                spacing: 4,
+            }
+        }
+        case '6months': {
+            const formatFn = (timestamp: number) => {
+                const d = new Date(timestamp);
+                const formated = d.toLocaleDateString('en-UK', { month: 'short' });
+                return { key: formated, display: formated };
+            };
+
+            return {
+                data: useFormatedData(180, formatFn, lcomp),
+                spacing: 2,
+            }
+        }
+    }
 };

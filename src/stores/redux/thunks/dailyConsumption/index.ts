@@ -2,9 +2,9 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
-import { daylyConsumptionInitialState } from "../../slices/daylyConsumptionSlice";
+import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyConsumptionSlice";
 import { RootState } from "../../store";
-import { ColumnConfig, createTable, getDBConnection, getData, insertDataToTable } from "../../../../utils/db-service";
+import { ColumnConfig, createTable, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
 import { SQLiteDatabase } from "react-native-sqlite-storage";
 
 const columnData: ColumnConfig[] = [
@@ -50,27 +50,32 @@ export const resetDailyData = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     } finally {
-      db?.close();
+      await closeDbConnection(db, rejectWithValue);
     };
   }
 );
 
 const insertTestData = async (db: SQLiteDatabase) => {
-  await insertDataToTable(db, 'history', {
-    createdAt: new Date(2024, 2, 10, 10, 0, 0).getTime(),
-    currentConsumtionMl: 3000});
-  await insertDataToTable(db, 'history', {
-    createdAt: new Date(2023, 1, 20, 9, 15, 34).getTime(),
-    currentConsumtionMl: 2100});
-  await insertDataToTable(db, 'history', {
-    createdAt: new Date(2023, 10, 10, 8, 0, 0).getTime(),
-    currentConsumtionMl: 4500});
-  const results = await getData(db, 'history', columnData);
-  console.log('results', results.length);
-  results.forEach(result => {
-    for (let index = 0; index < result.rows.length; index++) {
-      console.log(JSON.stringify(result.rows.item(index), null, 2));
-    }
+  const startTimestamp = Date.now();
+  const data: HistoryData[] = [];
+  const maxDays = (6 * 30);
+  const dayOffset = 86400 * 1000;
+  const getRandomInt = (min: number, max: number) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  for (let i = 1; i <= maxDays; i++) {
+    data.push({
+      createdAt: (startTimestamp - (i * dayOffset)),
+      currentConsumtionMl: getRandomInt(0, 3500),
+    });
+  }
+
+  await db.transaction(tx => {
+    data.forEach((d) => {
+      insertDataToTableTransactional(tx, 'history', d);
+    });
   });
 }
 
@@ -99,21 +104,21 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
         };
       } else {
         await Promise.all([
+          createTable(db, 'history', columnData),
+          insertTestData(db),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
           AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, daylyConsumptionInitialState.currentConsumtionMl.toString()),
           AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, daylyConsumptionInitialState.waterLevel.toString()),
           AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, daylyConsumptionInitialState.coffeesConsumed.toString())
         ]);
-        await createTable(db, 'history', columnData);
-        await insertTestData(db);
-      
+
         return daylyConsumptionInitialState;
       }
     } catch (err) {
       return rejectWithValue(err);
     } finally {
-      db?.close();
+      await closeDbConnection(db, rejectWithValue);
     };
   });
 
@@ -181,3 +186,41 @@ export const addWaterLevelSoFar = createAsyncThunk(
     }
   }
 );
+
+export const getHistoryData = createAsyncThunk(
+  'daylyConsumption/getHistoryData',
+  async (_value: number, { rejectWithValue }) => {
+    let db;
+    try {
+      db = await getDBConnection();
+      const data = await getData(db, 'history', columnData);
+      const result: HistoryData[] = [];
+      data.forEach(res => {
+        for (let i = 0; i < res.rows.length; i++) {
+          result.push(res.rows.item(i));
+        }
+      });
+      // result.forEach((r, i) => {
+      //   console.log(`${i} = ${r.createdAt}, ${r.currentConsumtionMl}`);
+      // });
+      result.sort((a, b) => {
+        if (a.createdAt > b.createdAt) return 1;
+        if (a.createdAt < b.createdAt) return -1;
+        return 0;
+      });
+      return result;
+    } catch (err) {
+      return rejectWithValue(err);
+    } finally {
+      await closeDbConnection(db, rejectWithValue);
+    };
+  }
+);
+
+const closeDbConnection = async (db: SQLiteDatabase | undefined, rejectWithValue: any) => {
+  try {
+    await db?.close();
+  } catch (error) {
+    return rejectWithValue(error);
+  }
+};

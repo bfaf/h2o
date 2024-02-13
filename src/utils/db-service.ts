@@ -1,5 +1,5 @@
 import { GetThunkAPI } from '@reduxjs/toolkit/dist/createAsyncThunk';
-import { ResultSet, SQLiteDatabase, enablePromise, openDatabase } from 'react-native-sqlite-storage';
+import { ResultSet, SQLiteDatabase, Transaction, enablePromise, openDatabase } from 'react-native-sqlite-storage';
 import { RootState } from '../stores/redux/store';
 enablePromise(true);
 
@@ -36,6 +36,31 @@ export const deleteTable = async (db: SQLiteDatabase, tableName: string) => {
 };
 
 export const insertDataToTable = async (db: SQLiteDatabase, tableName: string, data: Record<string, any>) => {
+    const columns = [];
+    const values = [];
+    let key: keyof (typeof data);
+    for (key in data) {
+        columns.push(key.toString());
+        if (typeof (data[key]) === 'boolean') {
+            values.push(`${data[key] === true ? 1 : 0}`);
+        } else if (typeof (data[key]) === 'string') {
+            values.push(`'${data[key]}'`);
+        } else if (data[key].toString().indexOf(',') >= 0) {
+            values.push(`'${JSON.stringify(data[key])}'`);
+        } else if (data[key].toString().length === 0) {
+            values.push("''");
+        } else {
+            values.push(`${data[key]}`);
+        }
+    }
+    
+    const insertQuery =
+        `INSERT OR REPLACE INTO ${tableName}(${columns.join(',')}) values(` + values.join(',') + ')';
+
+    return await db.executeSql(insertQuery);
+};
+
+export const insertDataToTableTransactional = async (db: Transaction, tableName: string, data: Record<string, any>) => {
     const columns = [];
     const values = [];
     let key: keyof (typeof data);

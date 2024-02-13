@@ -1,6 +1,11 @@
 import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData } from "../thunks/dailyConsumption";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData } from "../thunks/dailyConsumption";
+
+export type HistoryData = {
+  createdAt: number, // unix timestamp
+  currentConsumtionMl: number;
+};
 
 export interface DailyConsumptionState {
   currentConsumtionMl: number;
@@ -10,6 +15,7 @@ export interface DailyConsumptionState {
   waterLevel: number;
   dailyConsumptionErrors: SerializedError[];
   dailyDataIsLoading: boolean;
+  historyData: Array<HistoryData>;
 }
 
 export const daylyConsumptionInitialState = {
@@ -20,6 +26,7 @@ export const daylyConsumptionInitialState = {
   waterLevel: 200,
   dailyConsumptionErrors: [],
   dailyDataIsLoading: true,
+  historyData: []
 } as DailyConsumptionState;
 
 const daylyConsumptionSlice = createSlice({
@@ -95,6 +102,15 @@ const daylyConsumptionSlice = createSlice({
         state.glassesOfWaterConsumed = daylyConsumptionInitialState.glassesOfWaterConsumed;
       })
       .addCase(resetDailyData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
+      .addCase(getHistoryData.fulfilled, (state, action) => {
+        state.historyData = action.payload;
+      })
+      .addCase(getHistoryData.rejected, (state, action) => {
         state.dailyConsumptionErrors = [
           ...state.dailyConsumptionErrors,
           action.error

@@ -2,11 +2,14 @@
  * @format
  */
 
-import React from 'react';
-import { StyleSheet, SafeAreaView, View, Text } from 'react-native';
-import { LineChart, ruleTypes, PopulationPyramid } from "react-native-gifted-charts";
-import { useSelector } from 'react-redux';
-// import { RootState } from '../../stores/redux/store';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, SafeAreaView, View, Text, ActivityIndicator } from 'react-native';
+import { LineChart, ruleTypes } from "react-native-gifted-charts";
+import { useDispatch, useSelector } from 'react-redux';
+import { HistoryData, daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
+import { AppDispatch } from '../../stores/redux/store';
+import { getHistoryData } from '../../stores/redux/thunks/dailyConsumption';
+import { useHistoryData } from '../../utils/hooks';
 
 const styles = StyleSheet.create({
     container: {
@@ -15,47 +18,114 @@ const styles = StyleSheet.create({
     },
 });
 
-export const History = (): JSX.Element => {
-    // const { message } = useSelector((state: RootState) => state.message);
+const weekData = {
+    lcompMaxWith: 55,
+    spacing: 45,
+    formatFn: (timestamp: number) => {
+        const d = new Date(timestamp);
+        const date = d.toLocaleDateString('en-UK', { weekday: 'short'}).replace(/,.+/, '');
 
-    const popData = [
-        {left: 30, right: 40, midAxisLabel: '~115'},
-        {left: 40, right: 44, midAxisLabel: '~105'},
-        {left: 55, right: 57, midAxisLabel: '~95'},
-        {left: 94, right: 87, midAxisLabel: '~85'},
-        {left: 90, right: 88, midAxisLabel: '~75'},
-        {left: 88, right: 86, midAxisLabel: '~65'},
-      ];
+        return date;
+    },
+}
+
+const monthData = {
+    lcompMaxWith: 55,
+    spacing: 11,
+    formatFn: (timestamp: number) => {
+        const d = new Date(timestamp);
+        const onejan = new Date(d.getFullYear(), 0, 1);
+        return Math.ceil((((d.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+    },
+};
+
+const month3Data = {
+    lcompMaxWith: 55,
+    spacing: 4,
+    formatFn: (timestamp: number) => {
+        const d = new Date(timestamp);
+        
+        return d.toLocaleDateString('en-UK', { month: 'short' });
+    },
+};
+
+const month6Data = {
+    lcompMaxWith: 55,
+    spacing: 4,
+    formatFn: (timestamp: number) => {
+        const d = new Date(timestamp);
+        
+        return d.toLocaleDateString('en-UK', { month: 'short' });
+    },
+};
+
+export const History = (): JSX.Element => {
+    const dispatch: AppDispatch = useDispatch();
+    const { desiredDailyConsumption } = useSelector(daylyConsumption);
+    const [maxValue, setMaxValue] = useState<number>(desiredDailyConsumption);
+
+    const lcomp = (v: string) => (
+        <Text style={{ width: 55, color: 'black', fontWeight: 'bold' }}>{v}</Text>
+    );
+
+    const historyData = useHistoryData('week', lcomp);
+
+    useEffect(() => {
+        dispatch(getHistoryData(0));
+    }, [dispatch]);
+
+    useEffect(() => {
+        let maxValue = desiredDailyConsumption;
+        historyData.data.forEach((d) => {
+            if (d.value > maxValue) {
+                maxValue = d.value;
+            }
+        });
+        setMaxValue(maxValue);
+    }, [historyData, desiredDailyConsumption]);
+
+
+    if (historyData.data.length === 0) {
+        return (
+            <View style={{ flex: 1, marginVertical: 'auto', justifyContent: 'center' }}>
+                <ActivityIndicator size='large' />
+                <Text>Fetching history data...</Text>
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView>
-            <View style={styles.container}>
-            <PopulationPyramid
-        data={popData}
-        yAxisLabelTexts={[
-          '0-10',
-          '10-20',
-          '20-30',
-          '30-40',
-          '40-50',
-          '50-60',
-          '60-70',
-          '70-80',
-          '80-90',
-          '90-100',
-          '100-110',
-          '110-120',
-        ].reverse()}
-        yAxisLabelFontSize={9}
-        showYAxisIndices
-        showMidAxis
-        midAxisLabelFontSize={10}
-        midAxisLabelColor={'gray'}
-        leftBarLabelColor={'blue'}
-        rightBarLabelColor={'red'}
-        midAxisLeftColor={'blue'}
-        midAxisRightColor={'red'}
-      />
+            <View
+                style={{
+                    paddingVertical: 30,
+                    backgroundColor: '#fff',
+                }}>
+                <LineChart
+                    isAnimated
+                    thickness={3}
+                    color="#07BAD1"
+                    maxValue={maxValue}
+                    noOfSections={5}
+                    animateOnDataChange
+                    animationDuration={1000}
+                    onDataChangeAnimationDuration={300}
+                    areaChart
+                    yAxisTextStyle={{ color: 'black' }}
+                    data={historyData.data}
+                    hideDataPoints
+                    startFillColor={'rgb(84,219,234)'}
+                    endFillColor={'rgb(84,219,234)'}
+                    startOpacity={0.4}
+                    endOpacity={0.1}
+                    spacing={historyData.spacing}
+                    backgroundColor="#fff"
+                    rulesColor="gray"
+                    rulesType={ruleTypes.SOLID}
+                    initialSpacing={historyData.spacing}
+                    yAxisColor="lightgray"
+                    xAxisColor="lightgray"
+                />
             </View>
         </SafeAreaView>
     );
