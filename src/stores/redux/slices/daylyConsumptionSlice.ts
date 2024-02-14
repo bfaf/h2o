@@ -1,7 +1,7 @@
-import { createSlice, SerializedError } from "@reduxjs/toolkit";
+import { createSelector, createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData } from "../thunks/dailyConsumption";
-import { HistoryDataConfig, HistoryDataTimeFilter } from "../../../utils/hooks";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData, getWeekAverageHistoryData } from "../thunks/dailyConsumption";
+import { BarData, HistoryDataConfig, HistoryDataTimeFilter } from "../../../utils/hooks";
 
 export type HistoryData = {
   createdAt: number, // unix timestamp
@@ -21,6 +21,7 @@ export interface DailyConsumptionState {
   monthHistoryData: HistoryDataConfig;
   months3HistoryData: HistoryDataConfig;
   months6HistoryData: HistoryDataConfig;
+  weeklyAverageData: Record<string, BarData>;
 }
 
 export const daylyConsumptionInitialState = {
@@ -36,6 +37,7 @@ export const daylyConsumptionInitialState = {
   monthHistoryData: { data: [], spacing: 5},
   months3HistoryData: { data: [], spacing: 5},
   months6HistoryData: { data: [], spacing: 5},
+  weeklyAverageData: {},
 } as DailyConsumptionState;
 
 const daylyConsumptionSlice = createSlice({
@@ -162,8 +164,17 @@ const daylyConsumptionSlice = createSlice({
           action.error
         ];
       })
+      .addCase(getWeekAverageHistoryData.fulfilled, (state, action) => {
+        state.weeklyAverageData = action.payload;
+      })
+      .addCase(getWeekAverageHistoryData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
   },
-});// 
+});// getWeekAverageHistoryData 
 
 export const daylyConsumption = (state: RootState) => state.daylyConsumption;
 export const selectHistoryData = (state: RootState, period: HistoryDataTimeFilter) => {
@@ -178,6 +189,16 @@ export const selectHistoryData = (state: RootState, period: HistoryDataTimeFilte
         return state.daylyConsumption.months6HistoryData;
   }
 }
+const selectDailyConsumption = (state: RootState) => state.daylyConsumption;
+export const selectMonthlyAverageData = (state: RootState, period: HistoryDataTimeFilter) => {
+  if (period === 'month') {
+    return state.daylyConsumption.weeklyAverageData;
+  } else {
+    return {};
+  }
+};
+
+export const selectMonthlyAverageDataMemorized = createSelector([selectDailyConsumption, selectMonthlyAverageData], (_daily, period) => period);
 
 // export const { addConsumtion, addCoffee } = daylyConsumptionSlice.actions;
 export default daylyConsumptionSlice.reducer;

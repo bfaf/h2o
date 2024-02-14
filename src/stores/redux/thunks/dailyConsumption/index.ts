@@ -6,7 +6,7 @@ import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyCon
 import { RootState } from "../../store";
 import { ColumnConfig, createTable, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
 import { SQLiteDatabase } from "react-native-sqlite-storage";
-import { FormatFn } from "../../../../utils/hooks";
+import { BarData, FormatFn } from "../../../../utils/hooks";
 
 const columnData: ColumnConfig[] = [
   {
@@ -219,9 +219,47 @@ export const getFormatedData = (historyData: any, entries: number, formatFn: (ti
   });
 };
 
+export const getWeekAverageHistoryData = createAsyncThunk(
+  'daylyConsumption/getWeekAverageHistoryData',
+  async (historyData: HistoryData[], { rejectWithValue }) => {
+    try {
+      const formatFn = (timestamp: number) => {
+        const d = new Date(timestamp);
+        const date = d.toLocaleDateString('en-UK', { weekday: 'short' }).replace(/,.+/, '');
+
+        return { key: date, display: date };
+      }
+      
+      const days: Record<string, BarData> = {};
+      const subset = getDataSubset(historyData, 30);
+      subset.forEach(d => {
+        const formated = formatFn(d.createdAt);
+        if (days[formated.key]) {
+          days[formated.key].allConsumtionMl = days[formated.key].allConsumtionMl + d.currentConsumtionMl;
+          days[formated.key].total = days[formated.key].total + 1;
+        } else {
+          days[formated.key] = {
+            allConsumtionMl: d.currentConsumtionMl,
+            average: 0,
+            total: 1
+          }
+        }
+      });
+
+      for (let day in days) {
+        days[day].average = days[day].allConsumtionMl / days[day].total;
+      }
+
+      return days;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getWeekHistoryData = createAsyncThunk(
   'daylyConsumption/getWeekHistoryData',
-  async (historyData: any[], { rejectWithValue }) => {
+  async (historyData: HistoryData[], { rejectWithValue }) => {
     try {
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
@@ -242,7 +280,7 @@ export const getWeekHistoryData = createAsyncThunk(
 
 export const getMonthHistoryData = createAsyncThunk(
   'daylyConsumption/getMonthHistoryData',
-  async (historyData: any[], { rejectWithValue }) => {
+  async (historyData: HistoryData[], { rejectWithValue }) => {
     try {
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
@@ -264,7 +302,7 @@ export const getMonthHistoryData = createAsyncThunk(
 
 export const get3MonthsHistoryData = createAsyncThunk(
   'daylyConsumption/get3MonthsHistoryData',
-  async (historyData: any[], { rejectWithValue }) => {
+  async (historyData: HistoryData[], { rejectWithValue }) => {
     try {
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
@@ -284,7 +322,7 @@ export const get3MonthsHistoryData = createAsyncThunk(
 
 export const get6MonthsHistoryData = createAsyncThunk(
   'daylyConsumption/get6MonthsHistoryData',
-  async (historyData: any[], { rejectWithValue }) => {
+  async (historyData: HistoryData[], { rejectWithValue }) => {
     try {
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
@@ -331,6 +369,7 @@ export const getHistoryData = createAsyncThunk(
       dispatch(get6MonthsHistoryData(result));
       dispatch(get3MonthsHistoryData(result));
       dispatch(getMonthHistoryData(result));
+      dispatch(getWeekAverageHistoryData(result));
       dispatch(getWeekHistoryData(result));
     };
   }

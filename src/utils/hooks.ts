@@ -23,6 +23,11 @@ export type HistoryDataConfig = {
     data: lineDataItem[];
     spacing: number,
 };
+export type BarData = {
+    allConsumtionMl: number;
+    average: number;
+    total: number;
+  };
 
 export const useSchedule = () => {
     const {
