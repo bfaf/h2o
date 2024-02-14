@@ -1,6 +1,7 @@
 import { createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData } from "../thunks/dailyConsumption";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData } from "../thunks/dailyConsumption";
+import { HistoryDataConfig, HistoryDataTimeFilter } from "../../../utils/hooks";
 
 export type HistoryData = {
   createdAt: number, // unix timestamp
@@ -16,6 +17,10 @@ export interface DailyConsumptionState {
   dailyConsumptionErrors: SerializedError[];
   dailyDataIsLoading: boolean;
   historyData: Array<HistoryData>;
+  weekHistoryData: HistoryDataConfig;
+  monthHistoryData: HistoryDataConfig;
+  months3HistoryData: HistoryDataConfig;
+  months6HistoryData: HistoryDataConfig;
 }
 
 export const daylyConsumptionInitialState = {
@@ -26,7 +31,11 @@ export const daylyConsumptionInitialState = {
   waterLevel: 200,
   dailyConsumptionErrors: [],
   dailyDataIsLoading: true,
-  historyData: []
+  historyData: [],
+  weekHistoryData: { data: [], spacing: 5},
+  monthHistoryData: { data: [], spacing: 5},
+  months3HistoryData: { data: [], spacing: 5},
+  months6HistoryData: { data: [], spacing: 5},
 } as DailyConsumptionState;
 
 const daylyConsumptionSlice = createSlice({
@@ -116,10 +125,59 @@ const daylyConsumptionSlice = createSlice({
           action.error
         ];
       })
+      .addCase(get6MonthsHistoryData.fulfilled, (state, action) => {
+        state.months6HistoryData = action.payload;
+      })
+      .addCase(get6MonthsHistoryData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
+      .addCase(getWeekHistoryData.fulfilled, (state, action) => {
+        // console.log('getWeekHistoryData', JSON.stringify(action.payload, null, 2));
+        state.weekHistoryData = action.payload;
+      })
+      .addCase(getWeekHistoryData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
+      .addCase(getMonthHistoryData.fulfilled, (state, action) => {
+        state.monthHistoryData = action.payload;
+      })
+      .addCase(getMonthHistoryData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
+      .addCase(get3MonthsHistoryData.fulfilled, (state, action) => {
+        state.months3HistoryData = action.payload;
+      })
+      .addCase(get3MonthsHistoryData.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
   },
-});
+});// 
 
 export const daylyConsumption = (state: RootState) => state.daylyConsumption;
+export const selectHistoryData = (state: RootState, period: HistoryDataTimeFilter) => {
+  switch(period) {
+    case 'week':
+      return state.daylyConsumption.weekHistoryData;
+    case 'month':
+      return state.daylyConsumption.monthHistoryData;
+    case '3months':
+      return state.daylyConsumption.months3HistoryData;
+    case '6months':
+        return state.daylyConsumption.months6HistoryData;
+  }
+}
 
 // export const { addConsumtion, addCoffee } = daylyConsumptionSlice.actions;
 export default daylyConsumptionSlice.reducer;

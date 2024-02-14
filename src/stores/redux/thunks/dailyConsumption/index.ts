@@ -6,6 +6,7 @@ import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyCon
 import { RootState } from "../../store";
 import { ColumnConfig, createTable, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
 import { SQLiteDatabase } from "react-native-sqlite-storage";
+import { FormatFn } from "../../../../utils/hooks";
 
 const columnData: ColumnConfig[] = [
   {
@@ -187,14 +188,128 @@ export const addWaterLevelSoFar = createAsyncThunk(
   }
 );
 
+export const getDataSubset = (historyData: any[], entries: number) => {
+    const data = [];
+    const limit = entries === 180 ? 0 : (historyData.length - entries)
+    for (let i = historyData.length - 1; i >= limit; i--) {
+        data.push(historyData[i]);
+    }
+    data.reverse();
+
+    return data[0] ? data : [];
+};
+
+export const getFormatedData = (historyData: any, entries: number, formatFn: (timestamp: number) => FormatFn) => {
+  const data = getDataSubset(historyData, entries);
+  const weekNumbers: string[] = [];
+  return data.map(d => {
+    const weekNumber = formatFn(d.createdAt);
+    if (weekNumbers.includes(weekNumber.key)) {
+      return {
+        value: d.currentConsumtionMl,
+        hideDataPoint: true,
+      };
+    } else {
+      weekNumbers.push(weekNumber.key);
+      return {
+        value: d.currentConsumtionMl,
+        label: weekNumber.display
+      };
+    }
+  });
+};
+
+export const getWeekHistoryData = createAsyncThunk(
+  'daylyConsumption/getWeekHistoryData',
+  async (historyData: any[], { rejectWithValue }) => {
+    try {
+      const formatFn = (timestamp: number) => {
+        const d = new Date(timestamp);
+        const date = d.toLocaleDateString('en-UK', { weekday: 'short' }).replace(/,.+/, '');
+
+        return { key: date, display: date };
+      }
+
+      return {
+        data: getFormatedData(historyData, 7, formatFn),
+        spacing: 45,
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getMonthHistoryData = createAsyncThunk(
+  'daylyConsumption/getMonthHistoryData',
+  async (historyData: any[], { rejectWithValue }) => {
+    try {
+      const formatFn = (timestamp: number) => {
+        const d = new Date(timestamp);
+        const onejan = new Date(d.getFullYear(), 0, 1);
+        const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+        const display = d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' });
+        return { key: `W${weekNum}`, display };
+      }
+
+      return {
+        data: getFormatedData(historyData, 30, formatFn),
+        spacing: 11,
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const get3MonthsHistoryData = createAsyncThunk(
+  'daylyConsumption/get3MonthsHistoryData',
+  async (historyData: any[], { rejectWithValue }) => {
+    try {
+      const formatFn = (timestamp: number) => {
+        const d = new Date(timestamp);
+        const formated = d.toLocaleDateString('en-UK', { month: 'short' });
+        return { key: formated, display: formated };
+      };
+
+      return {
+        data: getFormatedData(historyData, 90, formatFn),
+        spacing: 4,
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const get6MonthsHistoryData = createAsyncThunk(
+  'daylyConsumption/get6MonthsHistoryData',
+  async (historyData: any[], { rejectWithValue }) => {
+    try {
+      const formatFn = (timestamp: number) => {
+        const d = new Date(timestamp);
+        const formated = d.toLocaleDateString('en-UK', { month: 'short' });
+        return { key: formated, display: formated };
+      };
+
+      return {
+        data: getFormatedData(historyData, 180, formatFn),
+        spacing: 2,
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getHistoryData = createAsyncThunk(
   'daylyConsumption/getHistoryData',
-  async (_value: number, { rejectWithValue }) => {
+  async (_value: number, { dispatch, rejectWithValue }) => {
     let db;
+    let result: HistoryData[] = [];
     try {
       db = await getDBConnection();
       const data = await getData(db, 'history', columnData);
-      const result: HistoryData[] = [];
       data.forEach(res => {
         for (let i = 0; i < res.rows.length; i++) {
           result.push(res.rows.item(i));
@@ -213,6 +328,10 @@ export const getHistoryData = createAsyncThunk(
       return rejectWithValue(err);
     } finally {
       await closeDbConnection(db, rejectWithValue);
+      dispatch(get6MonthsHistoryData(result));
+      dispatch(get3MonthsHistoryData(result));
+      dispatch(getMonthHistoryData(result));
+      dispatch(getWeekHistoryData(result));
     };
   }
 );
