@@ -1,6 +1,6 @@
 import { createSelector, createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData, getWeekAverageHistoryData } from "../thunks/dailyConsumption";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData, getWeekAverageHistoryData, deleteOldHistoryRecords } from "../thunks/dailyConsumption";
 import { BarData, HistoryDataConfig, HistoryDataTimeFilter } from "../../../utils/hooks";
 
 export type HistoryData = {
@@ -173,8 +173,17 @@ const daylyConsumptionSlice = createSlice({
           action.error
         ];
       })
+      .addCase(deleteOldHistoryRecords.fulfilled, (_state, _action) => {
+        // nothing to do...
+      })
+      .addCase(deleteOldHistoryRecords.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
   },
-});// getWeekAverageHistoryData 
+});
 
 export const daylyConsumption = (state: RootState) => state.daylyConsumption;
 export const selectHistoryData = (state: RootState, period: HistoryDataTimeFilter) => {

@@ -4,10 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
 import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyConsumptionSlice";
 import { RootState } from "../../store";
-import { ColumnConfig, createTable, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
+import { ColumnConfig, createTable, deleteOldRecords, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
 import { SQLiteDatabase } from "react-native-sqlite-storage";
 import { BarData, FormatFn } from "../../../../utils/hooks";
 
+const ONE_DAY = 86400 * 1000;
 const columnData: ColumnConfig[] = [
   {
     name: 'createdAt',
@@ -33,10 +34,15 @@ export const resetDailyData = createAsyncThunk(
         value = daylyConsumptionInitialState.desiredDailyConsumption.toString();
         await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString());
       }
+      let waterConsumptionSoFar = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR);
+      if (waterConsumptionSoFar == null) {
+        waterConsumptionSoFar = '0';
+      }
+      
       db = await getDBConnection();
       const data = {
         createdAt: Date.now(),
-        currentConsumtionMl: value,
+        currentConsumtionMl: waterConsumptionSoFar,
       };
 
       await Promise.all([
@@ -60,7 +66,7 @@ const insertTestData = async (db: SQLiteDatabase) => {
   const startTimestamp = Date.now();
   const data: HistoryData[] = [];
   const maxDays = (6 * 30);
-  const dayOffset = 86400 * 1000;
+  const dayOffset = ONE_DAY;
   const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -106,7 +112,7 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
       } else {
         await Promise.all([
           createTable(db, 'history', columnData),
-          insertTestData(db),
+          // insertTestData(db),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
           AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, daylyConsumptionInitialState.currentConsumtionMl.toString()),
@@ -189,14 +195,20 @@ export const addWaterLevelSoFar = createAsyncThunk(
 );
 
 export const getDataSubset = (historyData: any[], entries: number) => {
-    const data = [];
-    const limit = entries === 180 ? 0 : (historyData.length - entries)
-    for (let i = historyData.length - 1; i >= limit; i--) {
-        data.push(historyData[i]);
-    }
-    data.reverse();
+  const data = [];
+  let limit = 0;
+  if (entries === 180 || historyData.length < entries) {
+    limit = 0
+  } else {
+    limit = historyData.length - entries;
+  }
 
-    return data[0] ? data : [];
+  for (let i = historyData.length - 1; i >= limit; i--) {
+    data.push(historyData[i]);
+  }
+  data.reverse();
+
+  return data[0] ? data : [];
 };
 
 export const getFormatedData = (historyData: any, entries: number, formatFn: (timestamp: number) => FormatFn) => {
@@ -229,7 +241,7 @@ export const getWeekAverageHistoryData = createAsyncThunk(
 
         return { key: date, display: date };
       }
-      
+
       const days: Record<string, BarData> = {};
       const subset = getDataSubset(historyData, 30);
       subset.forEach(d => {
@@ -248,6 +260,17 @@ export const getWeekAverageHistoryData = createAsyncThunk(
 
       for (let day in days) {
         days[day].average = days[day].allConsumtionMl / days[day].total;
+      }
+      if (Object.keys(days).length < 7) {
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
+          if (!days[day]) {
+            days[day] = {
+              allConsumtionMl: 0,
+              average: 0,
+              total: 0
+            }
+          }
+        });
       }
 
       return days;
@@ -268,8 +291,32 @@ export const getWeekHistoryData = createAsyncThunk(
         return { key: date, display: date };
       }
 
+      const data = getFormatedData(historyData, 7, formatFn);
+      if (data.length < 7) {
+        const weekNumbers: string[] = [];
+        const today = Date.now();
+        data.reverse();
+        for (let i = data.length; i < 7; i++) {
+          const timestamp = today - (i * ONE_DAY);
+          const weekNumber = formatFn(timestamp);
+          if (weekNumbers.includes(weekNumber.key)) {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
+            });
+          } else {
+            weekNumbers.push(weekNumber.key);
+            data.push({
+              value: 0,
+              label: weekNumber.display
+            });
+          }
+        }
+        data.reverse();
+      }
+
       return {
-        data: getFormatedData(historyData, 7, formatFn),
+        data,
         spacing: 45,
       }
     } catch (err) {
@@ -285,13 +332,37 @@ export const getMonthHistoryData = createAsyncThunk(
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
         const onejan = new Date(d.getFullYear(), 0, 1);
-        const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+        const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / ONE_DAY) + onejan.getDay() + 1) / 7);
         const display = d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' });
         return { key: `W${weekNum}`, display };
       }
 
+      const data = getFormatedData(historyData, 30, formatFn);
+      if (data.length < 30) {
+        const weekNumbers: string[] = [];
+        const today = Date.now();
+        data.reverse();
+        for (let i = data.length; i < 30; i++) {
+          const timestamp = today - (i * ONE_DAY);
+          const weekNumber = formatFn(timestamp);
+          if (weekNumbers.includes(weekNumber.key)) {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
+            });
+          } else {
+            weekNumbers.push(weekNumber.key);
+            data.push({
+              value: 0,
+              label: weekNumber.display
+            });
+          }
+        }
+        data.reverse();
+      }
+
       return {
-        data: getFormatedData(historyData, 30, formatFn),
+        data,
         spacing: 11,
       }
     } catch (err) {
@@ -310,8 +381,32 @@ export const get3MonthsHistoryData = createAsyncThunk(
         return { key: formated, display: formated };
       };
 
+      const data = getFormatedData(historyData, 90, formatFn);
+      if (data.length < 90) {
+        const weekNumbers: string[] = [];
+        const today = Date.now();
+        data.reverse();
+        for (let i = data.length; i < 90; i++) {
+          const timestamp = today - (i * ONE_DAY);
+          const weekNumber = formatFn(timestamp);
+          if (weekNumbers.includes(weekNumber.key)) {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
+            });
+          } else {
+            weekNumbers.push(weekNumber.key);
+            data.push({
+              value: 0,
+              label: weekNumber.display
+            });
+          }
+        }
+        data.reverse();
+      }
+
       return {
-        data: getFormatedData(historyData, 90, formatFn),
+        data,
         spacing: 4,
       }
     } catch (err) {
@@ -330,12 +425,48 @@ export const get6MonthsHistoryData = createAsyncThunk(
         return { key: formated, display: formated };
       };
 
+      const data = getFormatedData(historyData, 180, formatFn);
+      if (data.length < 180) {
+        const weekNumbers: string[] = [];
+        const today = Date.now();
+        data.reverse();
+        for (let i = data.length; i < 180; i++) {
+          const timestamp = today - (i * ONE_DAY);
+          const weekNumber = formatFn(timestamp);
+          if (weekNumbers.includes(weekNumber.key)) {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
+            });
+          } else {
+            weekNumbers.push(weekNumber.key);
+            data.push({
+              value: 0,
+              label: weekNumber.display
+            });
+          }
+        }
+        data.reverse();
+      }
+
       return {
-        data: getFormatedData(historyData, 180, formatFn),
+        data,
         spacing: 2,
       }
     } catch (err) {
       return rejectWithValue(err);
+    }
+  }
+);
+
+export const deleteOldHistoryRecords = createAsyncThunk(
+  'daylyConsumption/deleteOldHistoryRecords',
+  async (_thunkAPI, { rejectWithValue }) => {
+    try {
+      await deleteOldRecords();
+    }
+    catch (error) {
+      rejectWithValue(error);
     }
   }
 );

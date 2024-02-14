@@ -108,7 +108,7 @@ export const updateTable = async (db: SQLiteDatabase, tableName: string, data: R
 
 export const shouldPopulateInitially = (results: [ResultSet]) => results[0].rows.length === 0;
 
-export const updateValue = async <T>(value: any, prop: keyof T, stateProp: keyof RootState, tableName: string, { getState, rejectWithValue, fulfillWithValue }: GetThunkAPI<any>) => {
+export const updateValue = async <T>(value: any, prop: keyof T, stateProp: keyof RootState, tableName: string, { rejectWithValue }: GetThunkAPI<any>) => {
     let db = undefined;
     try {
         db = await getDBConnection();
@@ -121,6 +121,23 @@ export const updateValue = async <T>(value: any, prop: keyof T, stateProp: keyof
     } catch (err) {
         return rejectWithValue(err);
     } finally {
-        db?.close();
+        try {
+            await db?.close();
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+};
+
+export const deleteOldRecords = async () => {
+    let db = undefined;
+    try {
+        db = await getDBConnection();
+        const oldEntries = Date.now() - (180 * 86400000);
+        const deleteQuery = `DELETE FROM history WHERE createdAt < ${oldEntries}`;
+        await db.executeSql(deleteQuery);
+        // console.log('Rows affected', result[0].rowsAffected);
+    } finally {
+        await db?.close();
     }
 };
