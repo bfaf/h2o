@@ -10,7 +10,7 @@ import { daylyConsumption, selectHistoryData, selectMonthlyAverageData, selectMo
 import { AppDispatch, RootState } from '../../stores/redux/store';
 import { getHistoryData } from '../../stores/redux/thunks/dailyConsumption';
 import { HistoryDataTimeFilter } from '../../utils/hooks';
-import { Button, Menu } from 'react-native-paper';
+import { Button, Menu, Divider } from 'react-native-paper';
 
 const styles = StyleSheet.create({
     container: {
@@ -202,6 +202,7 @@ export const History = (): JSX.Element => {
                     paddingRight: 10,
                     paddingTop: 0
                 }}>
+                    <Divider />
                     <Text style={{ fontSize: 16, color: '#000', paddingTop: 15, paddingBottom: 15 }}>Monthly average consumption per day</Text>
                     <BarChart
                         showFractionalValues
