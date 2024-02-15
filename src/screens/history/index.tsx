@@ -48,10 +48,11 @@ export const History = (): JSX.Element => {
     const historyData = useSelector((state: RootState) => selectHistoryData(state, filter));
     const monthlyAverageData = useSelector((state: RootState) => selectMonthlyAverageDataMemorized(state, filter));
 
-    const lcomp = (v: string) => {
-        let width = v.length * 10;
+    const lcomp = (v: string, filter: HistoryDataTimeFilter) => {
+        const width = v.length * 10;
+        const marginHorizontal = filter !== 'week' ? v.length * -2 : 10;
         return (
-            <Text style={{ width, color: 'black' }}>{v}</Text>
+            <Text style={{ width, color: 'black', marginHorizontal }}>{v}</Text>
         )
     };
 
@@ -66,7 +67,7 @@ export const History = (): JSX.Element => {
 
         return {
             ...d,
-            labelComponent: d.label ? () => lcomp(d.label) : undefined,
+            labelComponent: d.label ? () => lcomp(d.label, filter) : undefined,
             dataPointText: d.label ? d.label : undefined,
             dataPointLabelComponent: () => {
                 return (
