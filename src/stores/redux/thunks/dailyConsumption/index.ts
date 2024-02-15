@@ -259,7 +259,7 @@ export const getWeekAverageHistoryData = createAsyncThunk(
       });
 
       for (let day in days) {
-        days[day].average = days[day].allConsumtionMl / days[day].total;
+        days[day].average = Math.round(days[day].allConsumtionMl / days[day].total);
       }
       if (Object.keys(days).length < 7) {
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
@@ -363,7 +363,7 @@ export const getMonthHistoryData = createAsyncThunk(
 
       return {
         data,
-        spacing: 11,
+        spacing: 9.5,
       }
     } catch (err) {
       return rejectWithValue(err);
@@ -407,7 +407,7 @@ export const get3MonthsHistoryData = createAsyncThunk(
 
       return {
         data,
-        spacing: 4,
+        spacing: 3.2,
       }
     } catch (err) {
       return rejectWithValue(err);
@@ -451,7 +451,7 @@ export const get6MonthsHistoryData = createAsyncThunk(
 
       return {
         data,
-        spacing: 2,
+        spacing: 1.6,
       }
     } catch (err) {
       return rejectWithValue(err);

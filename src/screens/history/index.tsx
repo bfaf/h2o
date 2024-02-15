@@ -49,14 +49,31 @@ export const History = (): JSX.Element => {
     const monthlyAverageData = useSelector((state: RootState) => selectMonthlyAverageDataMemorized(state, filter));
 
     const lcomp = (v: string) => (
-        <Text style={{ width: 55, color: 'black', fontWeight: 'bold' }}>{v}</Text>
+        <Text style={{ width: 35, color: 'black', fontWeight: 'bold' }}>{v}</Text>
     );
 
     const formatedData = useMemo(() => historyData.data.map((d) => {
+        const calcYShift = (value: number, maxValue: number) => {
+            if (maxValue - 150 < value) {
+                return 11;
+            }
+            
+            return -11;
+        };
+        
         return {
             ...d,
             labelComponent: d.label ? () => lcomp(d.label) : undefined,
             dataPointText: d.label ? d.label : undefined,
+            dataPointLabelComponent: () => {
+                return (
+                    <View>
+                        <Text style={{ color: 'black' }}>{d.value}</Text>
+                    </View>
+                );
+            },
+            dataPointLabelShiftY: calcYShift(d.value, maxValue),
+            dataPointLabelShiftX: d.value < 100 ? 18 : 10,
         };
     }), [historyData]);
 
@@ -108,14 +125,27 @@ export const History = (): JSX.Element => {
 
     let barData: barDataItem[] = [];
     if (filter === 'month') {
+        const barlcomp = (value: number) => {
+            let width = 35;
+            if (value < 100) {
+                width = 10;
+            } else if (value < 1000) {
+                width = 28;
+            }
+            return (
+                <View>
+                    <Text style={{ color: 'black', width }}>{value}</Text>
+                </View>
+            );
+        }
         barData = [
-            { value: monthlyAverageData['Mon'].average, label: 'Mon', frontColor: '#4ABFF4' },
-            { value: monthlyAverageData['Tue'].average, label: 'Tue', frontColor: '#79C3DB' },
-            { value: monthlyAverageData['Wed'].average, label: 'Wed', frontColor: '#28B2B3' },
-            { value: monthlyAverageData['Thu'].average, label: 'Thu', frontColor: '#4ADDBA' },
-            { value: monthlyAverageData['Fri'].average, label: 'Fri', frontColor: '#91E3E3' },
-            { value: monthlyAverageData['Sat'].average, label: 'Sat', frontColor: '#4af49b' },
-            { value: monthlyAverageData['Sun'].average, label: 'Sun', frontColor: '#f4a74a' },
+            { value: monthlyAverageData['Mon'].average, label: 'Mon', frontColor: '#4ABFF4', topLabelComponent: () => barlcomp(monthlyAverageData['Mon'].average) },
+            { value: monthlyAverageData['Tue'].average, label: 'Tue', frontColor: '#79C3DB', topLabelComponent: () => barlcomp(monthlyAverageData['Tue'].average) },
+            { value: monthlyAverageData['Wed'].average, label: 'Wed', frontColor: '#28B2B3', topLabelComponent: () => barlcomp(monthlyAverageData['Wed'].average) },
+            { value: monthlyAverageData['Thu'].average, label: 'Thu', frontColor: '#4ADDBA', topLabelComponent: () => barlcomp(monthlyAverageData['Thu'].average) },
+            { value: monthlyAverageData['Fri'].average, label: 'Fri', frontColor: '#91E3E3', topLabelComponent: () => barlcomp(monthlyAverageData['Fri'].average) },
+            { value: monthlyAverageData['Sat'].average, label: 'Sat', frontColor: '#4af49b', topLabelComponent: () => barlcomp(monthlyAverageData['Sat'].average) },
+            { value: monthlyAverageData['Sun'].average, label: 'Sun', frontColor: '#f4a74a', topLabelComponent: () => barlcomp(monthlyAverageData['Sun'].average) },
         ];
     }
 
@@ -148,7 +178,6 @@ export const History = (): JSX.Element => {
                         curved
                         yAxisTextStyle={{ color: 'black' }}
                         data={formatedData}
-                        hideDataPoints
                         startFillColor={'rgb(84,219,234)'}
                         endFillColor={'rgb(84,219,234)'}
                         startOpacity={0.4}
@@ -157,9 +186,9 @@ export const History = (): JSX.Element => {
                         backgroundColor="#fff"
                         rulesColor="gray"
                         rulesType={ruleTypes.SOLID}
-                        initialSpacing={historyData.spacing}
                         yAxisColor="lightgray"
                         xAxisColor="lightgray"
+
                     />
                 </View>
                 {filter === 'month' && (<View style={{
@@ -179,6 +208,7 @@ export const History = (): JSX.Element => {
                         disablePress
                         yAxisTextStyle={{ color: 'black' }}
                         xAxisLabelTextStyle={{ color: 'black' }}
+                        spacing={historyData.spacing + 3}
                     />
                 </View>)}
             </ScrollView>
