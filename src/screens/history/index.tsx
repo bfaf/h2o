@@ -199,7 +199,8 @@ export const History = (): JSX.Element => {
                     paddingVertical: 30,
                     backgroundColor: '#fff',
                     paddingLeft: 10,
-                    paddingRight: 10
+                    paddingRight: 10,
+                    paddingTop: 0
                 }}>
                     <Text style={{ fontSize: 16, color: '#000', paddingTop: 15, paddingBottom: 15 }}>Monthly average consumption per day</Text>
                     <BarChart
