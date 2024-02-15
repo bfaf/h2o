@@ -141,3 +141,15 @@ export const deleteOldRecords = async () => {
         await db?.close();
     }
 };
+
+export const clearHistoryData = async () => {
+    let db = undefined;
+    try {
+        db = await getDBConnection();
+        const deleteQuery = `DELETE FROM history`;
+        await db.executeSql(deleteQuery);
+        // console.log('Rows affected', result[0].rowsAffected);
+    } finally {
+        await db?.close();
+    }
+};

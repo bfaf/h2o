@@ -11,6 +11,7 @@ import { settings } from '../../stores/redux/slices/settingSlice';
 import { addWaterAmount, removeWaterAmount, setFromDate, setHumanIcon, setReminderSwitch, setRepeatInterval, setToDate, setWaterPerCoffeeCup } from '../../stores/redux/thunks/settings';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSortedWaterAmounts } from '../../utils/hooks';
+import { deleteAllHistoryData, resetDailyData } from '../../stores/redux/thunks/dailyConsumption';
 
 const styles = StyleSheet.create({
     container: {
@@ -313,7 +314,12 @@ export const Settings = (): JSX.Element => {
                             {sortedWaterAmounts.map((amount, idx) => renderCard(amount, idx))}
                         </View>
                     </View>
+                    <View key="destructive-actions" style={{ padding: 25 }}>
+                        <Button mode='contained-tonal' contentStyle={{ backgroundColor: 'red' }} labelStyle={{...styles.biggerText, color:'white'}} onPress={() => { dispatch(deleteAllHistoryData()) }}>Clear history data</Button>
+                        {/* <Button mode='outlined' labelStyle={styles.biggerText} onPress={() => { dispatch(resetDailyData()) }}>Add current consumption</Button> */}
+                    </View>
                 </View>
+
             </ScrollView>
         </SafeAreaView>
     );

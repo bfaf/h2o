@@ -1,6 +1,6 @@
 import { createSelector, createSlice, SerializedError } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData, getWeekAverageHistoryData, deleteOldHistoryRecords } from "../thunks/dailyConsumption";
+import { setSettingDesiredDailyConsumption, addCoffeesConsumed, addWaterConsumedSoFar, addWaterLevelSoFar, resetDailyData, fetchAllDailyConsumptionData, getHistoryData, get6MonthsHistoryData, getWeekHistoryData, getMonthHistoryData, get3MonthsHistoryData, getWeekAverageHistoryData, deleteOldHistoryRecords, deleteAllHistoryData } from "../thunks/dailyConsumption";
 import { BarData, HistoryDataConfig, HistoryDataTimeFilter } from "../../../utils/hooks";
 
 export type HistoryData = {
@@ -177,6 +177,15 @@ const daylyConsumptionSlice = createSlice({
         // nothing to do...
       })
       .addCase(deleteOldHistoryRecords.rejected, (state, action) => {
+        state.dailyConsumptionErrors = [
+          ...state.dailyConsumptionErrors,
+          action.error
+        ];
+      })
+      .addCase(deleteAllHistoryData.fulfilled, (_state, _action) => {
+        // nothing to do...
+      })
+      .addCase(deleteAllHistoryData.rejected, (state, action) => {
         state.dailyConsumptionErrors = [
           ...state.dailyConsumptionErrors,
           action.error

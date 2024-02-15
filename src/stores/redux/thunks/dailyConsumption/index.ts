@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
 import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyConsumptionSlice";
 import { RootState } from "../../store";
-import { ColumnConfig, createTable, deleteOldRecords, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
+import { ColumnConfig, clearHistoryData, createTable, deleteOldRecords, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
 import { SQLiteDatabase } from "react-native-sqlite-storage";
 import { BarData, FormatFn } from "../../../../utils/hooks";
 
@@ -41,7 +41,7 @@ export const resetDailyData = createAsyncThunk(
       
       db = await getDBConnection();
       const data = {
-        createdAt: Date.now(),
+        createdAt: (Date.now() - ONE_DAY),
         currentConsumtionMl: waterConsumptionSoFar,
       };
 
@@ -296,7 +296,7 @@ export const getWeekHistoryData = createAsyncThunk(
         const weekNumbers: string[] = [];
         const today = Date.now();
         data.reverse();
-        for (let i = data.length; i < 7; i++) {
+        for (let i = data.length + 1; i <= 7; i++) {
           const timestamp = today - (i * ONE_DAY);
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
@@ -342,7 +342,7 @@ export const getMonthHistoryData = createAsyncThunk(
         const weekNumbers: string[] = [];
         const today = Date.now();
         data.reverse();
-        for (let i = data.length; i < 30; i++) {
+        for (let i = data.length + 1; i <= 30; i++) {
           const timestamp = today - (i * ONE_DAY);
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
@@ -386,7 +386,7 @@ export const get3MonthsHistoryData = createAsyncThunk(
         const weekNumbers: string[] = [];
         const today = Date.now();
         data.reverse();
-        for (let i = data.length; i < 90; i++) {
+        for (let i = data.length + 1; i <= 90; i++) {
           const timestamp = today - (i * ONE_DAY);
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
@@ -430,7 +430,7 @@ export const get6MonthsHistoryData = createAsyncThunk(
         const weekNumbers: string[] = [];
         const today = Date.now();
         data.reverse();
-        for (let i = data.length; i < 180; i++) {
+        for (let i = data.length + 1; i <= 180; i++) {
           const timestamp = today - (i * ONE_DAY);
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
@@ -473,7 +473,7 @@ export const deleteOldHistoryRecords = createAsyncThunk(
 
 export const getHistoryData = createAsyncThunk(
   'daylyConsumption/getHistoryData',
-  async (_value: number, { dispatch, rejectWithValue }) => {
+  async (_thunkAPI, { dispatch, rejectWithValue }) => {
     let db;
     let result: HistoryData[] = [];
     try {
@@ -503,6 +503,17 @@ export const getHistoryData = createAsyncThunk(
       dispatch(getWeekAverageHistoryData(result));
       dispatch(getWeekHistoryData(result));
     };
+  }
+);
+
+export const deleteAllHistoryData = createAsyncThunk(
+  'daylyConsumption/deleteAllHistoryData',
+  async (_thunkAPI, { dispatch, rejectWithValue }) => {
+    try {
+      await clearHistoryData();
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
 );
 
