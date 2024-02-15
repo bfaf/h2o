@@ -294,6 +294,11 @@ export const getWeekHistoryData = createAsyncThunk(
       const data = getFormatedData(historyData, 7, formatFn);
       if (data.length < 7) {
         const weekNumbers: string[] = [];
+        data.forEach((d) => {
+          if (d.label) {
+            weekNumbers.push(d.label);
+          }
+        });
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 7; i++) {
@@ -340,6 +345,11 @@ export const getMonthHistoryData = createAsyncThunk(
       const data = getFormatedData(historyData, 30, formatFn);
       if (data.length < 30) {
         const weekNumbers: string[] = [];
+        data.forEach((d) => {
+          if (d.label) {
+            weekNumbers.push(d.label);
+          }
+        });
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 30; i++) {
@@ -384,6 +394,11 @@ export const get3MonthsHistoryData = createAsyncThunk(
       const data = getFormatedData(historyData, 90, formatFn);
       if (data.length < 90) {
         const weekNumbers: string[] = [];
+        data.forEach((d) => {
+          if (d.label) {
+            weekNumbers.push(d.label);
+          }
+        });
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 90; i++) {
@@ -428,6 +443,11 @@ export const get6MonthsHistoryData = createAsyncThunk(
       const data = getFormatedData(historyData, 180, formatFn);
       if (data.length < 180) {
         const weekNumbers: string[] = [];
+        data.forEach((d) => {
+          if (d.label) {
+            weekNumbers.push(d.label);
+          }
+        });
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 180; i++) {

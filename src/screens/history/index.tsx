@@ -51,18 +51,19 @@ export const History = (): JSX.Element => {
     const lcomp = (v: string) => {
         let width = v.length * 10;
         return (
-        <Text style={{ width, color: 'black', fontWeight: 'bold' }}>{v}</Text>
-    )};
+            <Text style={{ width, color: 'black' }}>{v}</Text>
+        )
+    };
 
     const formatedData = useMemo(() => historyData.data.map((d) => {
         const calcYShift = (value: number, maxValue: number) => {
             if (maxValue - 150 < value) {
                 return 11;
             }
-            
+
             return -11;
         };
-        
+
         return {
             ...d,
             labelComponent: d.label ? () => lcomp(d.label) : undefined,
