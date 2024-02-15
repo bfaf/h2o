@@ -48,9 +48,11 @@ export const History = (): JSX.Element => {
     const historyData = useSelector((state: RootState) => selectHistoryData(state, filter));
     const monthlyAverageData = useSelector((state: RootState) => selectMonthlyAverageDataMemorized(state, filter));
 
-    const lcomp = (v: string) => (
-        <Text style={{ width: 35, color: 'black', fontWeight: 'bold' }}>{v}</Text>
-    );
+    const lcomp = (v: string) => {
+        let width = v.length * 10;
+        return (
+        <Text style={{ width, color: 'black', fontWeight: 'bold' }}>{v}</Text>
+    )};
 
     const formatedData = useMemo(() => historyData.data.map((d) => {
         const calcYShift = (value: number, maxValue: number) => {
