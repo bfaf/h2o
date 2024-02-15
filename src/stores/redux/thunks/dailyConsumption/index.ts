@@ -365,11 +365,16 @@ export const getMonthHistoryData = createAsyncThunk(
               value: 0,
               hideDataPoint: true,
             });
-          } else {
+          } else if (weekNumber.display.length > 0) {
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
               label: weekNumber.display
+            });
+          } else {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
             });
           }
         }
@@ -415,11 +420,16 @@ export const get3MonthsHistoryData = createAsyncThunk(
               value: 0,
               hideDataPoint: true,
             });
-          } else {
+          } else if (weekNumber.display.length > 0) {
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
               label: weekNumber.display
+            });
+          } else {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
             });
           }
         }
@@ -465,11 +475,16 @@ export const get6MonthsHistoryData = createAsyncThunk(
               value: 0,
               hideDataPoint: true,
             });
-          } else {
+          } else if (weekNumber.display.length > 0) {
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
               label: weekNumber.display
+            });
+          } else {
+            data.push({
+              value: 0,
+              hideDataPoint: true,
             });
           }
         }
