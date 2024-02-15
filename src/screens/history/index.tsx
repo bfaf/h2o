@@ -50,7 +50,7 @@ export const History = (): JSX.Element => {
 
     const lcomp = (v: string, filter: HistoryDataTimeFilter) => {
         const width = v.length * 10;
-        const marginHorizontal = filter !== 'week' ? v.length * -2 : 10;
+        const marginHorizontal = filter !== 'week' ? v.length * -2.5 : 10;
         return (
             <Text style={{ width, color: 'black', marginHorizontal }}>{v}</Text>
         )
