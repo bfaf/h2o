@@ -221,11 +221,16 @@ export const getFormatedData = (historyData: any, entries: number, formatFn: (ti
         value: d.currentConsumtionMl,
         hideDataPoint: true,
       };
-    } else {
+    } else if (weekNumber.display.length > 0) {
       weekNumbers.push(weekNumber.key);
       return {
         value: d.currentConsumtionMl,
         label: weekNumber.display
+      };
+    } else {
+      return {
+        value: d.currentConsumtionMl,
+        hideDataPoint: true,
       };
     }
   });
@@ -338,7 +343,7 @@ export const getMonthHistoryData = createAsyncThunk(
         const d = new Date(timestamp);
         const onejan = new Date(d.getFullYear(), 0, 1);
         const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / ONE_DAY) + onejan.getDay() + 1) / 7);
-        const display = d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' });
+        const display = d.getDay() === 1 ? d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' }) : '';
         return { key: `W${weekNum}`, display };
       }
 
@@ -388,7 +393,8 @@ export const get3MonthsHistoryData = createAsyncThunk(
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
         const formated = d.toLocaleDateString('en-UK', { month: 'short' });
-        return { key: formated, display: formated };
+        const display = d.getDate() === 1 ? d.toLocaleDateString('en-UK', { month: 'short' }) : '';
+        return { key: formated, display };
       };
 
       const data = getFormatedData(historyData, 90, formatFn);
@@ -437,7 +443,8 @@ export const get6MonthsHistoryData = createAsyncThunk(
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
         const formated = d.toLocaleDateString('en-UK', { month: 'short' });
-        return { key: formated, display: formated };
+        const display = d.getDate() === 1 ? d.toLocaleDateString('en-UK', { month: 'short' }) : '';
+        return { key: formated, display };
       };
 
       const data = getFormatedData(historyData, 180, formatFn);
