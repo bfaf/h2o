@@ -104,7 +104,7 @@ export const History = (): JSX.Element => {
 
 
     useEffect(() => {
-        dispatch(getHistoryData(0));
+        dispatch(getHistoryData());
     }, [dispatch]);
 
     useEffect(() => {

@@ -10,7 +10,7 @@ export interface SettingsState {
     repeatInterval: number; // minutes
     femaleIcon: boolean;
     waterAmounts: string[]; // '200', '300', '500'
-    settingsErrors: SerializedError[];
+    settingsErrors: string[];
     settingsDataIsLoading: boolean;
 }
 
@@ -29,7 +29,11 @@ export const settingsInitialState = {
 const settingsSlice = createSlice({
     name: "settings",
     initialState: settingsInitialState,
-    reducers: {},
+    reducers: {
+        clearSettingsErrors: (state) => {
+            state.settingsErrors = [];
+        },
+    },
     extraReducers: (builder) => {
         builder.addCase(setReminderSwitch.fulfilled, (state, action) => {
             state.remindersToggleEnabled = action.payload;
@@ -50,7 +54,7 @@ const settingsSlice = createSlice({
             .addCase(fetchAllSettings.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
                 state.settingsDataIsLoading = false;
             })
@@ -60,7 +64,7 @@ const settingsSlice = createSlice({
             .addCase(setWaterPerCoffeeCup.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(setRepeatInterval.fulfilled, (state, action) => {
@@ -69,7 +73,7 @@ const settingsSlice = createSlice({
             .addCase(setRepeatInterval.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(setFromDate.fulfilled, (state, action) => {
@@ -78,7 +82,7 @@ const settingsSlice = createSlice({
             .addCase(setFromDate.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(setToDate.fulfilled, (state, action) => {
@@ -87,7 +91,7 @@ const settingsSlice = createSlice({
             .addCase(setToDate.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(setHumanIcon.fulfilled, (state, action) => {
@@ -96,7 +100,7 @@ const settingsSlice = createSlice({
             .addCase(setHumanIcon.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(addWaterAmount.fulfilled, (state, action) => {
@@ -105,7 +109,7 @@ const settingsSlice = createSlice({
             .addCase(addWaterAmount.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
             .addCase(removeWaterAmount.fulfilled, (state, action) => {
@@ -114,11 +118,13 @@ const settingsSlice = createSlice({
             .addCase(removeWaterAmount.rejected, (state, action) => {
                 state.settingsErrors = [
                     ...state.settingsErrors,
-                    action.error
+                    (action.payload as Error).message
                 ];
             })
     },
 });
+
+export const { clearSettingsErrors } = settingsSlice.actions;
 
 export const settings = (state: RootState) => state.settings;
 export default settingsSlice.reducer;

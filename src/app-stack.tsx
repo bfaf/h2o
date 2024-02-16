@@ -3,15 +3,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Settings, History, Caluclator } from './screens';
 import CustomNavigationBar from './components/custom-nav-bar';
 import { useAppState, useInitValues, useNotificationBackgroundService, useNotificationFrontendService } from './utils/hooks';
-import { useSelector } from 'react-redux';
-import { daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
-import { settings } from './stores/redux/slices/settingSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearDaylyConsumptionErrors, daylyConsumption } from './stores/redux/slices/daylyConsumptionSlice';
+import { clearSettingsErrors, settings } from './stores/redux/slices/settingSlice';
 import { ActivityIndicator } from 'react-native-paper';
 import { Alert, View } from 'react-native';
+import { AppDispatch } from './stores/redux/store';
 
 const Stack = createNativeStackNavigator();
 
 const AppStack = (): JSX.Element => {
+    const dispatch: AppDispatch = useDispatch();
     useAppState();
     useInitValues();
     useNotificationFrontendService();
@@ -28,13 +30,19 @@ const AppStack = (): JSX.Element => {
 
     useEffect(() => {
         if (settingsErrors.length) {
+            let errors;
+            if (typeof settingsErrors === 'object') {
+                errors = JSON.stringify(settingsErrors, null, 2);
+            } else {
+                errors = settingsErrors;
+            }
             Alert.alert(
                 'Errors Detected',
-                `Error(s) while loading the settings: ${settingsErrors}. Will load default settings`,
+                `Error(s) while loading the settings: ${errors}. Will load default settings`,
                 [
                     {
                         text: "OK",
-                        onPress: () => { },
+                        onPress: () => { dispatch(clearSettingsErrors()); },
                         style: "cancel"
                     },
                 ],
@@ -42,13 +50,19 @@ const AppStack = (): JSX.Element => {
             );
         }
         else if (dailyConsumptionErrors.length) {
+            let errors;
+            if (typeof dailyConsumptionErrors === 'object') {
+                errors = JSON.stringify(dailyConsumptionErrors, null, 2);
+            } else {
+                errors = dailyConsumptionErrors;
+            }
             Alert.alert(
                 'Errors Detected',
-                `Error(s) while updating data: ${settingsErrors}.`,
+                `Error(s) while updating data: ${errors}.`,
                 [
                     {
                         text: "OK",
-                        onPress: () => { },
+                        onPress: () => { dispatch(clearDaylyConsumptionErrors()); },
                         style: "cancel"
                     },
                 ],
