@@ -93,6 +93,7 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
     try {
       db = await getDBConnection();
       const values = await Promise.all([
+        createTable(db, 'history', columnData),
         AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE),
         AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR),
         AsyncStorage.getItem(STORE_KEY_WATER_LEVEL_SO_FAR),
@@ -111,7 +112,6 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
         };
       } else {
         await Promise.all([
-          createTable(db, 'history', columnData),
           // insertTestData(db),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
           AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
