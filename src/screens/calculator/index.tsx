@@ -108,7 +108,9 @@ export const Caluclator = (): JSX.Element => {
             mode="outlined"
             inputMode="decimal"
             value={text}
-            onChangeText={(text) => { calucalteRecommendedDailyAmount(text); }}
+            onChangeText={(text) => {
+              calucalteRecommendedDailyAmount(text);
+            }}
           />
           <Text style={styles.applyButton}> </Text>
         </View>
@@ -134,13 +136,24 @@ export const Caluclator = (): JSX.Element => {
         </View>
         <View>
           <Portal>
-            <Dialog visible={dialogVisible} onDismiss={() => { setDialogVisible(false); }}>
+            <Dialog
+              visible={dialogVisible}
+              onDismiss={() => {
+                setDialogVisible(false);
+              }}
+            >
               <Dialog.Title>Info</Dialog.Title>
               <Dialog.Content>
                 <Text>The daily amount is updated</Text>
               </Dialog.Content>
               <Dialog.Actions>
-                <Button onPress={() => { navigation.goBack(); }}>Back</Button>
+                <Button
+                  onPress={() => {
+                    navigation.goBack();
+                  }}
+                >
+                  Back
+                </Button>
               </Dialog.Actions>
             </Dialog>
           </Portal>

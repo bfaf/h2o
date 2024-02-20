@@ -1,5 +1,5 @@
-import { createSlice, SerializedError } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import { createSlice } from '@reduxjs/toolkit';
+import { type RootState } from '../store';
 import {
   addWaterAmount,
   fetchAllSettings,
@@ -24,7 +24,7 @@ export interface SettingsState {
   settingsDataIsLoading: boolean;
 }
 
-export const settingsInitialState = {
+export const settingsInitialState: SettingsState = {
   remindersToggleEnabled: true,
   waterPerCoffeeCup: 200,
   repeatInterval: 60,
@@ -34,7 +34,7 @@ export const settingsInitialState = {
   waterAmounts: ['200', '300', '500'],
   settingsErrors: [],
   settingsDataIsLoading: true,
-} as SettingsState;
+};
 
 const settingsSlice = createSlice({
   name: 'settings',
@@ -50,63 +50,114 @@ const settingsSlice = createSlice({
         state.remindersToggleEnabled = action.payload;
       })
       .addCase(fetchAllSettings.fulfilled, (state, action) => {
-        state.remindersToggleEnabled = action.payload.remindersToggleEnabled;
-        state.fromTime = action.payload.fromTime;
-        state.toTime = action.payload.toTime;
-        state.waterPerCoffeeCup = action.payload.waterPerCoffeeCup;
-        state.repeatInterval = action.payload.repeatInterval;
-        state.femaleIcon = action.payload.femaleIcon;
-        state.waterAmounts = action.payload.waterAmounts;
-        state.settingsDataIsLoading = false;
+        return {
+          ...state,
+          remindersToggleEnabled: action.payload.remindersToggleEnabled,
+          fromTime: action.payload.fromTime,
+          toTime: action.payload.toTime,
+          waterPerCoffeeCup: action.payload.waterPerCoffeeCup,
+          repeatInterval: action.payload.repeatInterval,
+          femaleIcon: action.payload.femaleIcon,
+          waterAmounts: action.payload.waterAmounts,
+          settingsDataIsLoading: false,
+        };
       })
       .addCase(fetchAllSettings.pending, (state, action) => {
-        state.settingsDataIsLoading = true;
+        return {
+          ...state,
+          settingsDataIsLoading: true,
+        };
       })
       .addCase(fetchAllSettings.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
-        state.settingsDataIsLoading = false;
+        return {
+          ...state,
+          settingsDataIsLoading: false,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(setWaterPerCoffeeCup.fulfilled, (state, action) => {
-        state.waterPerCoffeeCup = action.payload;
+        return {
+          ...state,
+          waterPerCoffeeCup: action.payload,
+        };
       })
       .addCase(setWaterPerCoffeeCup.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(setRepeatInterval.fulfilled, (state, action) => {
-        state.repeatInterval = action.payload;
+        return {
+          ...state,
+          repeatInterval: action.payload,
+        };
       })
       .addCase(setRepeatInterval.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(setFromDate.fulfilled, (state, action) => {
-        state.fromTime = action.payload;
+        return {
+          ...state,
+          fromTime: action.payload,
+        };
       })
       .addCase(setFromDate.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(setToDate.fulfilled, (state, action) => {
-        state.toTime = action.payload;
+        return {
+          ...state,
+          toTime: action.payload,
+        };
       })
       .addCase(setToDate.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(setHumanIcon.fulfilled, (state, action) => {
-        state.femaleIcon = action.payload;
+        return {
+          ...state,
+          femaleIcon: action.payload,
+        };
       })
       .addCase(setHumanIcon.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(addWaterAmount.fulfilled, (state, action) => {
-        state.waterAmounts = action.payload;
+        return {
+          ...state,
+          waterAmounts: action.payload,
+        };
       })
       .addCase(addWaterAmount.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       })
       .addCase(removeWaterAmount.fulfilled, (state, action) => {
-        state.waterAmounts = action.payload;
+        return {
+          ...state,
+          waterAmounts: action.payload,
+        };
       })
       .addCase(removeWaterAmount.rejected, (state, action) => {
-        state.settingsErrors = [...state.settingsErrors, (action.payload as Error).message];
+        return {
+          ...state,
+          settingsErrors: [...state.settingsErrors, (action.payload as Error).message],
+        };
       });
   },
 });

@@ -16,7 +16,11 @@ import {
   deleteOldHistoryRecords,
   deleteAllHistoryData,
 } from '../thunks/dailyConsumption';
-import { type BarData, type HistoryDataConfig, type HistoryDataTimeFilter } from '../../../utils/hooks';
+import {
+  type BarData,
+  type HistoryDataConfig,
+  type HistoryDataTimeFilter,
+} from '../../../utils/hooks';
 
 export interface HistoryData {
   createdAt: number; // unix timestamp
@@ -40,7 +44,7 @@ export interface DailyConsumptionState {
   weeklyAverageData: Record<string, BarData>;
 }
 
-export const daylyConsumptionInitialState = {
+export const daylyConsumptionInitialState: DailyConsumptionState = {
   currentConsumtionMl: 0,
   desiredDailyConsumption: 3500,
   coffeesConsumed: 0,
@@ -55,7 +59,7 @@ export const daylyConsumptionInitialState = {
   months3HistoryData: { data: [], spacing: 5 },
   months6HistoryData: { data: [], spacing: 5 },
   weeklyAverageData: {},
-} as DailyConsumptionState;
+};
 
 const daylyConsumptionSlice = createSlice({
   name: 'daylyConsumption',
@@ -68,160 +72,232 @@ const daylyConsumptionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllDailyConsumptionData.fulfilled, (state, action) => {
-        const {
-          desiredDailyConsumption,
-          waterLevel,
-          currentConsumtionMl,
-          coffeesConsumed,
-          glassesOfWaterConsumed,
-        } = action.payload;
-        state.desiredDailyConsumption = desiredDailyConsumption;
-        state.waterLevel = waterLevel;
-        state.currentConsumtionMl = currentConsumtionMl;
-        state.coffeesConsumed = coffeesConsumed;
-        state.glassesOfWaterConsumed = glassesOfWaterConsumed;
-        state.dailyDataIsLoading = false;
+        return {
+          ...state,
+          ...action.payload,
+          dailyDataIsLoading: false,
+        };
       })
       .addCase(fetchAllDailyConsumptionData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
-        state.dailyDataIsLoading = false;
+        return {
+          ...state,
+          dailyDataIsLoading: false,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(fetchAllDailyConsumptionData.pending, (state, _action) => {
-        state.dailyDataIsLoading = true;
+        return {
+          ...state,
+          dailyDataIsLoading: true,
+        };
       })
       .addCase(setSettingDesiredDailyConsumption.fulfilled, (state, action) => {
-        state.desiredDailyConsumption = action.payload;
+        return {
+          ...state,
+          desiredDailyConsumption: action.payload,
+        };
       })
       .addCase(setSettingDesiredDailyConsumption.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(addCoffeesConsumed.fulfilled, (state, action) => {
         const { newCoffeeAmount, newDesiredWaterConsumption } = action.payload;
-        state.desiredDailyConsumption = newDesiredWaterConsumption;
-        // state.currentConsumtionMl = newWaterAmount;
-        state.coffeesConsumed = newCoffeeAmount;
+        return {
+          ...state,
+          desiredDailyConsumption: newDesiredWaterConsumption,
+          coffeesConsumed: newCoffeeAmount,
+        };
       })
       .addCase(addCoffeesConsumed.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(addWaterConsumedSoFar.fulfilled, (state, action) => {
         const { newWaterAmount, newGlassesAmount } = action.payload;
-        state.currentConsumtionMl = newWaterAmount;
-        state.glassesOfWaterConsumed = newGlassesAmount;
+        return {
+          ...state,
+          currentConsumtionMl: newWaterAmount,
+          glassesOfWaterConsumed: newGlassesAmount,
+        };
       })
       .addCase(addWaterConsumedSoFar.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(addWaterLevelSoFar.fulfilled, (state, action) => {
-        state.waterLevel = action.payload;
+        return {
+          ...state,
+          waterLevel: action.payload,
+        };
       })
       .addCase(addWaterLevelSoFar.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(resetDailyData.fulfilled, (state, action) => {
-        state.desiredDailyConsumption = action.payload;
-        state.waterLevel = daylyConsumptionInitialState.waterLevel;
-        state.currentConsumtionMl = daylyConsumptionInitialState.currentConsumtionMl;
-        state.coffeesConsumed = daylyConsumptionInitialState.coffeesConsumed;
-        state.glassesOfWaterConsumed = daylyConsumptionInitialState.glassesOfWaterConsumed;
+        return {
+          ...state,
+          desiredDailyConsumption: action.payload,
+          waterLevel: daylyConsumptionInitialState.waterLevel,
+          currentConsumtionMl: daylyConsumptionInitialState.currentConsumtionMl,
+          coffeesConsumed: daylyConsumptionInitialState.coffeesConsumed,
+          glassesOfWaterConsumed: daylyConsumptionInitialState.glassesOfWaterConsumed,
+        };
       })
       .addCase(resetDailyData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(getHistoryData.fulfilled, (state, action) => {
-        state.historyData = action.payload;
-        state.historyDataisLoading = false;
+        return {
+          ...state,
+          historyData: action.payload,
+          historyDataisLoading: false,
+        };
       })
       .addCase(getHistoryData.pending, (state, action) => {
-        state.historyDataisLoading = true;
+        return {
+          ...state,
+          historyDataisLoading: true,
+        };
       })
       .addCase(getHistoryData.rejected, (state, action) => {
-        state.historyDataisLoading = false;
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          historyDataisLoading: false,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(get6MonthsHistoryData.fulfilled, (state, action) => {
-        state.months6HistoryData = action.payload;
+        return {
+          ...state,
+          months6HistoryData: action.payload,
+        };
       })
       .addCase(get6MonthsHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(getWeekHistoryData.fulfilled, (state, action) => {
-        state.weekHistoryData = action.payload;
+        return {
+          ...state,
+          weekHistoryData: action.payload,
+        };
       })
       .addCase(getWeekHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(getMonthHistoryData.fulfilled, (state, action) => {
-        state.monthHistoryData = action.payload;
+        return {
+          ...state,
+          monthHistoryData: action.payload,
+        };
       })
       .addCase(getMonthHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(get3MonthsHistoryData.fulfilled, (state, action) => {
-        state.months3HistoryData = action.payload;
+        return {
+          ...state,
+          months3HistoryData: action.payload,
+        };
       })
       .addCase(get3MonthsHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(getWeekAverageHistoryData.fulfilled, (state, action) => {
-        state.weeklyAverageData = action.payload;
+        return {
+          ...state,
+          weeklyAverageData: action.payload,
+        };
       })
       .addCase(getWeekAverageHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(deleteOldHistoryRecords.fulfilled, (_state, _action) => {
         // nothing to do...
       })
       .addCase(deleteOldHistoryRecords.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       })
       .addCase(deleteAllHistoryData.fulfilled, (_state, _action) => {
         // nothing to do...
       })
       .addCase(deleteAllHistoryData.rejected, (state, action) => {
-        state.dailyConsumptionErrors = [
-          ...state.dailyConsumptionErrors,
-          (action.payload as Error).message,
-        ];
+        return {
+          ...state,
+          dailyConsumptionErrors: [
+            ...state.dailyConsumptionErrors,
+            (action.payload as Error).message,
+          ],
+        };
       });
   },
 });

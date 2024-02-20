@@ -13,8 +13,12 @@ export const AddLiquid = (): React.JSX.Element => {
 
   useEffect(() => {
     // Show and hide the fab group
-    navigation.addListener('focus', () => { setShowFabGroup(true); });
-    navigation.addListener('blur', () => { setShowFabGroup(false); });
+    navigation.addListener('focus', () => {
+      setShowFabGroup(true);
+    });
+    navigation.addListener('blur', () => {
+      setShowFabGroup(false);
+    });
     return () => {
       navigation.removeListener('focus', () => {});
       navigation.removeListener('blur', () => {});
@@ -28,7 +32,9 @@ export const AddLiquid = (): React.JSX.Element => {
         open={openLiquids}
         visible={showFabGroup}
         icon="plus"
-        onStateChange={({ open }) => { setOpenLiquids(open); }}
+        onStateChange={({ open }) => {
+          setOpenLiquids(open);
+        }}
         actions={[
           createAction('coffee'),
           ...[...sortedWaterAmounts].map((amount: string) => createAction(amount)),

@@ -4,7 +4,10 @@ import { Animated } from 'react-native';
 import type { PropsWithChildren } from 'react';
 
 type WaterLevelContainerProps = PropsWithChildren<{ increse: number; femaleIcon: boolean }>;
-const WaterLevelContainer = ({ increse, femaleIcon }: WaterLevelContainerProps): React.JSX.Element => {
+const WaterLevelContainer = ({
+  increse,
+  femaleIcon,
+}: WaterLevelContainerProps): React.JSX.Element => {
   const initialValue = 200;
   const fadeAnim = useRef(new Animated.Value(initialValue)).current;
 

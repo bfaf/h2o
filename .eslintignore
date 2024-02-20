@@ -1,3 +1,5 @@
 node_modules/
 android/
 ios/
+metro.config.js
+utils\jest-setup.js

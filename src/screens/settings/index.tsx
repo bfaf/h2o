@@ -138,8 +138,12 @@ export const Settings = (): React.JSX.Element => {
     await dispatch(setToDate(selectedDate?.toISOString() || ''));
   };
 
-  const openMenu = (): void => { setShowRepeatIntervalMenu(true); };
-  const closeMenu = (): void => { setShowRepeatIntervalMenu(false); };
+  const openMenu = (): void => {
+    setShowRepeatIntervalMenu(true);
+  };
+  const closeMenu = (): void => {
+    setShowRepeatIntervalMenu(false);
+  };
   const onSelectedRepeatIntervalMenuItem = async (value: '30 min' | '60 min' | '90 min') => {
     switch (value) {
       case '30 min':
@@ -155,8 +159,12 @@ export const Settings = (): React.JSX.Element => {
     closeMenu();
   };
 
-  const openCoffeeMenu = () => { setShowCoffeeCupMenu(true); };
-  const closeCoffeeMenu = () => { setShowCoffeeCupMenu(false); };
+  const openCoffeeMenu = () => {
+    setShowCoffeeCupMenu(true);
+  };
+  const closeCoffeeMenu = () => {
+    setShowCoffeeCupMenu(false);
+  };
   const onSelectedCoffeeCupMenuItem = (
     value: '100 ml' | '200 ml' | '300 ml' | '400 ml' | '500 ml',
   ) => {
@@ -166,7 +174,7 @@ export const Settings = (): React.JSX.Element => {
           await dispatch(setWaterPerCoffeeCup(100));
           break;
         case '200 ml':
-          await  dispatch(setWaterPerCoffeeCup(200));
+          await dispatch(setWaterPerCoffeeCup(200));
           break;
         case '300 ml':
           await dispatch(setWaterPerCoffeeCup(300));
@@ -252,7 +260,9 @@ export const Settings = (): React.JSX.Element => {
               {...props}
               mode="outlined"
               icon="minus"
-              onPress={async () => { await onRemoveAmount(amount); }}
+              onPress={async () => {
+                await onRemoveAmount(amount);
+              }}
             />
           )}
         />
@@ -275,11 +285,36 @@ export const Settings = (): React.JSX.Element => {
                 </Button>
               }
             >
-              <Menu.Item onPress={() => { onSelectedCoffeeCupMenuItem('100 ml'); }} title="100 ml" />
-              <Menu.Item onPress={() => { onSelectedCoffeeCupMenuItem('200 ml'); }} title="200 ml" />
-              <Menu.Item onPress={() => { onSelectedCoffeeCupMenuItem('300 ml'); }} title="300 ml" />
-              <Menu.Item onPress={() => { onSelectedCoffeeCupMenuItem('400 ml'); }} title="400 ml" />
-              <Menu.Item onPress={() => { onSelectedCoffeeCupMenuItem('500 ml'); }} title="500 ml" />
+              <Menu.Item
+                onPress={() => {
+                  onSelectedCoffeeCupMenuItem('100 ml');
+                }}
+                title="100 ml"
+              />
+              <Menu.Item
+                onPress={() => {
+                  onSelectedCoffeeCupMenuItem('200 ml');
+                }}
+                title="200 ml"
+              />
+              <Menu.Item
+                onPress={() => {
+                  onSelectedCoffeeCupMenuItem('300 ml');
+                }}
+                title="300 ml"
+              />
+              <Menu.Item
+                onPress={() => {
+                  onSelectedCoffeeCupMenuItem('400 ml');
+                }}
+                title="400 ml"
+              />
+              <Menu.Item
+                onPress={() => {
+                  onSelectedCoffeeCupMenuItem('500 ml');
+                }}
+                title="500 ml"
+              />
             </Menu>
           </View>
           <View style={styles.reminderSwitchContainer}>
@@ -307,7 +342,9 @@ export const Settings = (): React.JSX.Element => {
                 disabled={!remindersToggleEnabled}
                 mode="outlined"
                 labelStyle={styles.biggerText}
-                onPress={() => { setShowFromDate(true); }}
+                onPress={() => {
+                  setShowFromDate(true);
+                }}
               >
                 {fromTimeLocalised}
               </Button>
@@ -318,7 +355,9 @@ export const Settings = (): React.JSX.Element => {
                 disabled={!remindersToggleEnabled}
                 mode="outlined"
                 labelStyle={styles.biggerText}
-                onPress={() => { setShowToDate(true); }}
+                onPress={() => {
+                  setShowToDate(true);
+                }}
               >
                 {toTimeLocalised}
               </Button>
@@ -329,7 +368,9 @@ export const Settings = (): React.JSX.Element => {
                   testID="fromDateTimePicker"
                   value={fromTimeConverted}
                   mode="time"
-                  onChange={async (_event, date) => { await onChangeFromDate(date, toTimeConverted); }}
+                  onChange={async (_event, date) => {
+                    await onChangeFromDate(date, toTimeConverted);
+                  }}
                   display="spinner"
                   is24Hour={true}
                   minuteInterval={30}
@@ -340,7 +381,9 @@ export const Settings = (): React.JSX.Element => {
                   testID="toDateTimePicker"
                   value={toTimeConverted}
                   mode="time"
-                  onChange={async (_event, date) => { await onChangeToDate(date, fromTimeConverted); }}
+                  onChange={async (_event, date) => {
+                    await onChangeToDate(date, fromTimeConverted);
+                  }}
                   display="spinner"
                   is24Hour={true}
                   minuteInterval={30}
@@ -366,15 +409,21 @@ export const Settings = (): React.JSX.Element => {
                 }
               >
                 <Menu.Item
-                  onPress={async () => { await onSelectedRepeatIntervalMenuItem('30 min'); }}
+                  onPress={async () => {
+                    await onSelectedRepeatIntervalMenuItem('30 min');
+                  }}
                   title="30 min"
                 />
                 <Menu.Item
-                  onPress={async () => { await onSelectedRepeatIntervalMenuItem('60 min'); }}
+                  onPress={async () => {
+                    await onSelectedRepeatIntervalMenuItem('60 min');
+                  }}
                   title="60 min"
                 />
                 <Menu.Item
-                  onPress={async () => { await onSelectedRepeatIntervalMenuItem('90 min'); }}
+                  onPress={async () => {
+                    await onSelectedRepeatIntervalMenuItem('90 min');
+                  }}
                   title="90 min"
                 />
               </Menu>
@@ -395,9 +444,17 @@ export const Settings = (): React.JSX.Element => {
                 mode="outlined"
                 inputMode="decimal"
                 value={text}
-                onChangeText={(text) => { setText(text); }}
+                onChangeText={(text) => {
+                  setText(text);
+                }}
               />
-              <IconButton mode="outlined" icon="plus" onPress={async () => { await onAddAmount(text); }} />
+              <IconButton
+                mode="outlined"
+                icon="plus"
+                onPress={async () => {
+                  await onAddAmount(text);
+                }}
+              />
             </View>
             <View key="wamounts">
               {sortedWaterAmounts.map((amount, idx) => renderCard(amount, idx))}

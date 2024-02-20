@@ -89,7 +89,7 @@ export const useSchedule = () => {
         0,
         0,
       );
-      
+
       scheduleDailyNotification(nextDayNotif, notificationActions);
     }
   }, [
@@ -137,17 +137,18 @@ export const useHandleNotificationAction = () => {
       let calculated = 0;
       if (shouldAddCoffee(notifId)) {
         // coffee
-        await dispatch(addCoffeesConsumed(waterPerCoffeeCup));
+        dispatch(addCoffeesConsumed(waterPerCoffeeCup));
         calculated = calculateIncrease(
           -waterPerCoffeeCup,
           desiredDailyConsumption,
           currentConsumtionMl,
         );
       } else {
-        await dispatch(addWaterConsumedSoFar(num));
+        dispatch(addWaterConsumedSoFar(num));
         calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
       }
-      await dispatch(addWaterLevelSoFar(calculated));
+      console.log(`val: ${val}, num: ${num}, calculated: ${calculated}`);
+      dispatch(addWaterLevelSoFar(calculated));
     },
     [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
   );
@@ -162,18 +163,15 @@ export const useCreateAction = () => {
       return {
         icon: isCoffee ? 'coffee' : 'cup',
         label: isCoffee ? '+ Coffee' : `+ ${amount}ml`,
-        onPress: () => { createAction(amount).catch(err => {
-           Alert.alert(
-            'Error',
-            `Error while adding ${amount}: ${err}`,
-            [
+        onPress: () => {
+          createAction(amount).catch((err) => {
+            Alert.alert('Error', `Error while adding ${amount}: ${err}`, [
               {
                 text: 'OK',
-                onPress: () => { },
+                onPress: () => {},
                 style: 'cancel',
               },
-            ],
-          );
+            ]);
           });
         },
       };
@@ -251,7 +249,9 @@ export const useInitValues = () => {
               // 3. launch intent to navigate the user to the appropriate screen
               {
                 text: 'OK, open settings',
-                onPress: async () => { await notifee.openAlarmPermissionSettings(); },
+                onPress: async () => {
+                  await notifee.openAlarmPermissionSettings();
+                },
               },
               {
                 text: 'Cancel',
@@ -271,7 +271,9 @@ export const useInitValues = () => {
               // 3. launch intent to navigate the user to the appropriate screen
               {
                 text: 'OK, open settings',
-                onPress: async () => { await notifee.openBatteryOptimizationSettings(); },
+                onPress: async () => {
+                  await notifee.openBatteryOptimizationSettings();
+                },
               },
               {
                 text: 'Cancel',

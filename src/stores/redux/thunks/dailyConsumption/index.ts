@@ -63,7 +63,7 @@ export const resetDailyData = createAsyncThunk(
         createdAt: Date.now() - ONE_DAY,
         currentConsumtionMl: waterConsumptionSoFar,
       };
-      
+
       await Promise.all([
         AsyncStorage.setItem(
           STORE_KEY_WATER_CONSUMED_SO_FAR,
@@ -242,8 +242,9 @@ export const addWaterLevelSoFar = createAsyncThunk(
   'daylyConsumption/addWaterLevelSoFarValue',
   async (value: number, { rejectWithValue, fulfillWithValue }) => {
     try {
+      console.log('addWaterLevelSoFar', value);
       await AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, value.toString());
-      return value;
+      return fulfillWithValue(value);
     } catch (err) {
       return rejectWithValue(err);
     }

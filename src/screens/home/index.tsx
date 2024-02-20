@@ -38,7 +38,7 @@ export const Home = (): JSX.Element => {
           style={styles.image}
           testID="personImage"
         />
-        <RenderMaskedView waterLevel={waterLevel} />
+        <RenderMaskedView />
       </View>
       <View style={styles.consumedSoFarView}>
         <Text style={styles.dailyLimitText} testID="currentConsumtionMlSoFar">

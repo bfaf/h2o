@@ -4,14 +4,11 @@ import { Platform, Image, StyleSheet } from 'react-native';
 import WaterLevelContainer from './waterLevelContainer';
 import { useSelector } from 'react-redux';
 import { settings } from '../../stores/redux/slices/settingSlice';
+import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
 
-interface RenderMaskedViewProps {
-  waterLevel: number;
-}
-
-export const RenderMaskedView = (props: RenderMaskedViewProps): React.JSX.Element => {
-  const { waterLevel } = props;
+export const RenderMaskedView = (): React.JSX.Element => {
   const { femaleIcon } = useSelector(settings);
+  const { waterLevel } = useSelector(daylyConsumption);
 
   const isIOS = Platform.OS === 'ios';
   if (isIOS) {

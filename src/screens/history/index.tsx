@@ -89,8 +89,12 @@ export const History = (): JSX.Element => {
     [historyData],
   );
 
-  const openMenu = () => { setShowFilterMenu(true); };
-  const closeMenu = () => { setShowFilterMenu(false); };
+  const openMenu = () => {
+    setShowFilterMenu(true);
+  };
+  const closeMenu = () => {
+    setShowFilterMenu(false);
+  };
   const onSelectedFilterMenuItem = async (
     value: '7 days' | '1 month' | '3 months' | '6 months',
   ) => {
@@ -113,7 +117,7 @@ export const History = (): JSX.Element => {
   };
 
   useEffect(() => {
-      dispatch(getHistoryData());
+    dispatch(getHistoryData());
   }, [dispatch]);
 
   useEffect(() => {
@@ -225,10 +229,30 @@ export const History = (): JSX.Element => {
               </Button>
             }
           >
-            <Menu.Item onPress={async () => { await onSelectedFilterMenuItem('7 days'); }} title="7 days" />
-            <Menu.Item onPress={async () => { await onSelectedFilterMenuItem('1 month'); }} title="1 month" />
-            <Menu.Item onPress={async () => { await onSelectedFilterMenuItem('3 months'); }} title="3 months" />
-            <Menu.Item onPress={async () => { await onSelectedFilterMenuItem('6 months'); }} title="6 months" />
+            <Menu.Item
+              onPress={async () => {
+                await onSelectedFilterMenuItem('7 days');
+              }}
+              title="7 days"
+            />
+            <Menu.Item
+              onPress={async () => {
+                await onSelectedFilterMenuItem('1 month');
+              }}
+              title="1 month"
+            />
+            <Menu.Item
+              onPress={async () => {
+                await onSelectedFilterMenuItem('3 months');
+              }}
+              title="3 months"
+            />
+            <Menu.Item
+              onPress={async () => {
+                await onSelectedFilterMenuItem('6 months');
+              }}
+              title="6 months"
+            />
           </Menu>
         </View>
         <View
