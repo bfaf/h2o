@@ -1,12 +1,28 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, DEFAULT_DAILY_CONSUMPTION, STORE_KEY_WATER_CONSUMED_SO_FAR, STORE_KEY_WATER_LEVEL_SO_FAR, STORE_KEY_COFFEES_CONSUMPTION, STORE_KEY_GLASSES_OF_WATER_CONSUMED, STORE_KEY_DAILY_CONSUMPTION } from "../../../../constants";
-import { HistoryData, daylyConsumptionInitialState } from "../../slices/daylyConsumptionSlice";
-import { RootState } from "../../store";
-import { ColumnConfig, clearHistoryData, createTable, deleteOldRecords, getDBConnection, getData, insertDataToTable, insertDataToTableTransactional } from "../../../../utils/db-service";
-import { SQLiteDatabase } from "react-native-sqlite-storage";
-import { BarData, FormatFn } from "../../../../utils/hooks";
+import {
+  STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE,
+  STORE_KEY_WATER_CONSUMED_SO_FAR,
+  STORE_KEY_WATER_LEVEL_SO_FAR,
+  STORE_KEY_COFFEES_CONSUMPTION,
+  STORE_KEY_GLASSES_OF_WATER_CONSUMED,
+  STORE_KEY_DAILY_CONSUMPTION,
+} from '../../../../constants';
+import { type HistoryData, daylyConsumptionInitialState } from '../../slices/daylyConsumptionSlice';
+import { type RootState } from '../../store';
+import {
+  type ColumnConfig,
+  clearHistoryData,
+  createTable,
+  deleteOldRecords,
+  getDBConnection,
+  getData,
+  insertDataToTable,
+  insertDataToTableTransactional,
+} from '../../../../utils/db-service';
+import { type SQLiteDatabase } from 'react-native-sqlite-storage';
+import { type BarData, type FormatFn } from '../../../../utils/hooks';
 
 const ONE_DAY = 86400 * 1000;
 const columnData: ColumnConfig[] = [
@@ -32,59 +48,75 @@ export const resetDailyData = createAsyncThunk(
         await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + value);
       } else {
         value = daylyConsumptionInitialState.desiredDailyConsumption.toString();
-        await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString());
+        await AsyncStorage.setItem(
+          STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE,
+          daylyConsumptionInitialState.desiredDailyConsumption.toString(),
+        );
       }
       let waterConsumptionSoFar = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR);
       if (waterConsumptionSoFar == null) {
         waterConsumptionSoFar = '0';
       }
-      
+
       db = await getDBConnection();
       const data = {
-        createdAt: (Date.now() - ONE_DAY),
+        createdAt: Date.now() - ONE_DAY,
         currentConsumtionMl: waterConsumptionSoFar,
       };
-
+      
       await Promise.all([
-        await insertDataToTable(db, 'history', data),
-        AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, daylyConsumptionInitialState.currentConsumtionMl.toString()),
-        AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, daylyConsumptionInitialState.waterLevel.toString()),
-        AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, daylyConsumptionInitialState.coffeesConsumed.toString()),
-        AsyncStorage.setItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED, daylyConsumptionInitialState.glassesOfWaterConsumed.toString())
+        AsyncStorage.setItem(
+          STORE_KEY_WATER_CONSUMED_SO_FAR,
+          daylyConsumptionInitialState.currentConsumtionMl.toString(),
+        ),
+        AsyncStorage.setItem(
+          STORE_KEY_WATER_LEVEL_SO_FAR,
+          daylyConsumptionInitialState.waterLevel.toString(),
+        ),
+        AsyncStorage.setItem(
+          STORE_KEY_COFFEES_CONSUMPTION,
+          daylyConsumptionInitialState.coffeesConsumed.toString(),
+        ),
+        AsyncStorage.setItem(
+          STORE_KEY_GLASSES_OF_WATER_CONSUMED,
+          daylyConsumptionInitialState.glassesOfWaterConsumed.toString(),
+        ),
       ]);
+
+      await insertDataToTable(db, 'history', data);
 
       return Number(value);
     } catch (err) {
       return rejectWithValue(err);
     } finally {
-      await closeDbConnection(db, rejectWithValue);
-    };
-  }
+      await db?.close();
+    }
+  },
 );
 
 const insertTestData = async (db: SQLiteDatabase) => {
   const startTimestamp = Date.now();
   const data: HistoryData[] = [];
-  const maxDays = (6 * 30);
+  const maxDays = 6 * 30;
   const dayOffset = ONE_DAY;
   const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  };
   for (let i = 1; i <= maxDays; i++) {
     data.push({
-      createdAt: (startTimestamp - (i * dayOffset)),
+      createdAt: startTimestamp - i * dayOffset,
       currentConsumtionMl: getRandomInt(0, 3500),
     });
   }
 
-  await db.transaction(tx => {
+  await db.transaction((tx) => {
     data.forEach((d) => {
       insertDataToTableTransactional(tx, 'history', d);
     });
   });
-}
+};
 
 export const fetchAllDailyConsumptionData = createAsyncThunk(
   'daylyConsumption/fetchAllDailyConsumptionData',
@@ -92,14 +124,14 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
     let db;
     try {
       db = await getDBConnection();
+      await createTable(db, 'history', columnData);
       const values = await Promise.all([
-        createTable(db, 'history', columnData),
         AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE),
         AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR),
         AsyncStorage.getItem(STORE_KEY_WATER_LEVEL_SO_FAR),
         AsyncStorage.getItem(STORE_KEY_COFFEES_CONSUMPTION),
       ]);
-      if (values.every(val => val != null)) {
+      if (values.every((val) => val != null)) {
         // console.log('All values found');
         // values.forEach((v, i) => console.log(i, v));
         return {
@@ -113,11 +145,26 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
       } else {
         await Promise.all([
           // insertTestData(db),
-          AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
-          AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, daylyConsumptionInitialState.desiredDailyConsumption.toString()),
-          AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, daylyConsumptionInitialState.currentConsumtionMl.toString()),
-          AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, daylyConsumptionInitialState.waterLevel.toString()),
-          AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, daylyConsumptionInitialState.coffeesConsumed.toString())
+          AsyncStorage.setItem(
+            STORE_KEY_DAILY_CONSUMPTION,
+            daylyConsumptionInitialState.desiredDailyConsumption.toString(),
+          ),
+          AsyncStorage.setItem(
+            STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE,
+            daylyConsumptionInitialState.desiredDailyConsumption.toString(),
+          ),
+          AsyncStorage.setItem(
+            STORE_KEY_WATER_CONSUMED_SO_FAR,
+            daylyConsumptionInitialState.currentConsumtionMl.toString(),
+          ),
+          AsyncStorage.setItem(
+            STORE_KEY_WATER_LEVEL_SO_FAR,
+            daylyConsumptionInitialState.waterLevel.toString(),
+          ),
+          AsyncStorage.setItem(
+            STORE_KEY_COFFEES_CONSUMPTION,
+            daylyConsumptionInitialState.coffeesConsumed.toString(),
+          ),
         ]);
 
         return daylyConsumptionInitialState;
@@ -125,80 +172,89 @@ export const fetchAllDailyConsumptionData = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     } finally {
-      await closeDbConnection(db, rejectWithValue);
-    };
-  });
+      await db?.close();
+    }
+  },
+);
 
 export const setSettingDesiredDailyConsumption = createAsyncThunk(
   'daylyConsumption/setDesiredDailyConsumptionValue',
   async (value: number, { rejectWithValue, getState }) => {
     try {
       const state = getState() as RootState;
-      const valueWithCoffee = value + (state.daylyConsumption.coffeesConsumed * state.settings.waterPerCoffeeCup);
+      const valueWithCoffee =
+        value + state.daylyConsumption.coffeesConsumed * state.settings.waterPerCoffeeCup;
       await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION, valueWithCoffee.toString());
-      await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, valueWithCoffee.toString());
+      await AsyncStorage.setItem(
+        STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE,
+        valueWithCoffee.toString(),
+      );
       return value;
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const addCoffeesConsumed = createAsyncThunk(
   'daylyConsumption/addCoffeesConsumedValue',
   async (value: number, { rejectWithValue }) => {
     try {
-      const desiredWaterConsumption = await AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE) || 0;
-      const newDesiredWaterConsumption = (Number(desiredWaterConsumption) + value);
-      await AsyncStorage.setItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE, '' + newDesiredWaterConsumption);
+      const desiredWaterConsumption =
+        (await AsyncStorage.getItem(STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE)) || 0;
+      const newDesiredWaterConsumption = Number(desiredWaterConsumption) + value;
+      await AsyncStorage.setItem(
+        STORE_KEY_DAILY_CONSUMPTION_WITH_COFFEE,
+        '' + newDesiredWaterConsumption,
+      );
 
-      const coffees = await AsyncStorage.getItem(STORE_KEY_COFFEES_CONSUMPTION) || 0;
-      const newCoffeeAmount = (Number(coffees) + 1);
+      const coffees = (await AsyncStorage.getItem(STORE_KEY_COFFEES_CONSUMPTION)) || 0;
+      const newCoffeeAmount = Number(coffees) + 1;
       await AsyncStorage.setItem(STORE_KEY_COFFEES_CONSUMPTION, '' + newCoffeeAmount);
 
       return { newCoffeeAmount, newDesiredWaterConsumption };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const addWaterConsumedSoFar = createAsyncThunk(
   'daylyConsumption/addWaterConsumedSoFarValue',
   async (value: number, { rejectWithValue }) => {
     try {
-      const water = await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR) || 0;
-      const newWaterAmount = (Number(water) + value);
+      const water = (await AsyncStorage.getItem(STORE_KEY_WATER_CONSUMED_SO_FAR)) || 0;
+      const newWaterAmount = Number(water) + value;
       await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + newWaterAmount);
 
-      const glasses = await AsyncStorage.getItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED) || 0;
-      const newGlassesAmount = (Number(glasses) + 1);
+      const glasses = (await AsyncStorage.getItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED)) || 0;
+      const newGlassesAmount = Number(glasses) + 1;
       await AsyncStorage.setItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED, '' + newGlassesAmount);
 
       return { newWaterAmount, newGlassesAmount };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const addWaterLevelSoFar = createAsyncThunk(
   'daylyConsumption/addWaterLevelSoFarValue',
-  async (value: number, { rejectWithValue }) => {
+  async (value: number, { rejectWithValue, fulfillWithValue }) => {
     try {
-      await AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, '' + value);
+      await AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, value.toString());
       return value;
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
-export const getDataSubset = (historyData: any[], entries: number) => {
+export const getDataSubset = (historyData: HistoryData[], entries: number): HistoryData[] => {
   const data = [];
   let limit = 0;
   if (entries === 180 || historyData.length < entries) {
-    limit = 0
+    limit = 0;
   } else {
     limit = historyData.length - entries;
   }
@@ -211,10 +267,14 @@ export const getDataSubset = (historyData: any[], entries: number) => {
   return data[0] ? data : [];
 };
 
-export const getFormatedData = (historyData: any, entries: number, formatFn: (timestamp: number) => FormatFn) => {
+export const getFormatedData = (
+  historyData: HistoryData[],
+  entries: number,
+  formatFn: (timestamp: number) => FormatFn,
+) => {
   const data = getDataSubset(historyData, entries);
   const weekNumbers: string[] = [];
-  return data.map(d => {
+  return data.map((d) => {
     const weekNumber = formatFn(d.createdAt);
     if (weekNumbers.includes(weekNumber.key)) {
       return {
@@ -225,7 +285,7 @@ export const getFormatedData = (historyData: any, entries: number, formatFn: (ti
       weekNumbers.push(weekNumber.key);
       return {
         value: d.currentConsumtionMl,
-        label: weekNumber.display
+        label: weekNumber.display,
       };
     } else {
       return {
@@ -245,35 +305,36 @@ export const getWeekAverageHistoryData = createAsyncThunk(
         const date = d.toLocaleDateString('en-UK', { weekday: 'short' }).replace(/,.+/, '');
 
         return { key: date, display: date };
-      }
+      };
 
       const days: Record<string, BarData> = {};
       const subset = getDataSubset(historyData, 30);
-      subset.forEach(d => {
+      subset.forEach((d) => {
         const formated = formatFn(d.createdAt);
         if (days[formated.key]) {
-          days[formated.key].allConsumtionMl = days[formated.key].allConsumtionMl + d.currentConsumtionMl;
+          days[formated.key].allConsumtionMl =
+            days[formated.key].allConsumtionMl + d.currentConsumtionMl;
           days[formated.key].total = days[formated.key].total + 1;
         } else {
           days[formated.key] = {
             allConsumtionMl: d.currentConsumtionMl,
             average: 0,
-            total: 1
-          }
+            total: 1,
+          };
         }
       });
 
-      for (let day in days) {
+      for (const day in days) {
         days[day].average = Math.round(days[day].allConsumtionMl / days[day].total);
       }
       if (Object.keys(days).length < 7) {
-        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((day) => {
           if (!days[day]) {
             days[day] = {
               allConsumtionMl: 0,
               average: 0,
-              total: 0
-            }
+              total: 0,
+            };
           }
         });
       }
@@ -282,7 +343,7 @@ export const getWeekAverageHistoryData = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const getWeekHistoryData = createAsyncThunk(
@@ -294,7 +355,7 @@ export const getWeekHistoryData = createAsyncThunk(
         const date = d.toLocaleDateString('en-UK', { weekday: 'short' }).replace(/,.+/, '');
 
         return { key: date, display: date };
-      }
+      };
 
       const data = getFormatedData(historyData, 7, formatFn);
       if (data.length < 7) {
@@ -307,7 +368,7 @@ export const getWeekHistoryData = createAsyncThunk(
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 7; i++) {
-          const timestamp = today - (i * ONE_DAY);
+          const timestamp = today - i * ONE_DAY;
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
             data.push({
@@ -318,7 +379,7 @@ export const getWeekHistoryData = createAsyncThunk(
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
-              label: weekNumber.display
+              label: weekNumber.display,
             });
           }
         }
@@ -328,11 +389,11 @@ export const getWeekHistoryData = createAsyncThunk(
       return {
         data,
         spacing: 45,
-      }
+      };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const getMonthHistoryData = createAsyncThunk(
@@ -342,10 +403,13 @@ export const getMonthHistoryData = createAsyncThunk(
       const formatFn = (timestamp: number) => {
         const d = new Date(timestamp);
         const onejan = new Date(d.getFullYear(), 0, 1);
-        const weekNum = Math.ceil((((d.getTime() - onejan.getTime()) / ONE_DAY) + onejan.getDay() + 1) / 7);
-        const display = d.getDay() === 1 ? d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' }) : '';
+        const weekNum = Math.ceil(
+          ((d.getTime() - onejan.getTime()) / ONE_DAY + onejan.getDay() + 1) / 7,
+        );
+        const display =
+          d.getDay() === 1 ? d.toLocaleDateString('en-UK', { day: '2-digit', month: 'short' }) : '';
         return { key: `W${weekNum}`, display };
-      }
+      };
 
       const data = getFormatedData(historyData, 30, formatFn);
       if (data.length < 30) {
@@ -358,7 +422,7 @@ export const getMonthHistoryData = createAsyncThunk(
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 30; i++) {
-          const timestamp = today - (i * ONE_DAY);
+          const timestamp = today - i * ONE_DAY;
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
             data.push({
@@ -369,7 +433,7 @@ export const getMonthHistoryData = createAsyncThunk(
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
-              label: weekNumber.display
+              label: weekNumber.display,
             });
           } else {
             data.push({
@@ -384,11 +448,11 @@ export const getMonthHistoryData = createAsyncThunk(
       return {
         data,
         spacing: 9.5,
-      }
+      };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const get3MonthsHistoryData = createAsyncThunk(
@@ -413,7 +477,7 @@ export const get3MonthsHistoryData = createAsyncThunk(
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 90; i++) {
-          const timestamp = today - (i * ONE_DAY);
+          const timestamp = today - i * ONE_DAY;
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
             data.push({
@@ -424,7 +488,7 @@ export const get3MonthsHistoryData = createAsyncThunk(
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
-              label: weekNumber.display
+              label: weekNumber.display,
             });
           } else {
             data.push({
@@ -439,11 +503,11 @@ export const get3MonthsHistoryData = createAsyncThunk(
       return {
         data,
         spacing: 3.2,
-      }
+      };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const get6MonthsHistoryData = createAsyncThunk(
@@ -468,7 +532,7 @@ export const get6MonthsHistoryData = createAsyncThunk(
         const today = Date.now();
         data.reverse();
         for (let i = data.length + 1; i <= 180; i++) {
-          const timestamp = today - (i * ONE_DAY);
+          const timestamp = today - i * ONE_DAY;
           const weekNumber = formatFn(timestamp);
           if (weekNumbers.includes(weekNumber.key)) {
             data.push({
@@ -479,7 +543,7 @@ export const get6MonthsHistoryData = createAsyncThunk(
             weekNumbers.push(weekNumber.key);
             data.push({
               value: 0,
-              label: weekNumber.display
+              label: weekNumber.display,
             });
           } else {
             data.push({
@@ -494,11 +558,11 @@ export const get6MonthsHistoryData = createAsyncThunk(
       return {
         data,
         spacing: 1.6,
-      }
+      };
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const deleteOldHistoryRecords = createAsyncThunk(
@@ -506,22 +570,21 @@ export const deleteOldHistoryRecords = createAsyncThunk(
   async (_thunkAPI, { rejectWithValue }) => {
     try {
       await deleteOldRecords();
-    }
-    catch (error) {
+    } catch (error) {
       rejectWithValue(error);
     }
-  }
+  },
 );
 
 export const getHistoryData = createAsyncThunk(
   'daylyConsumption/getHistoryData',
   async (_thunkAPI, { dispatch, rejectWithValue }) => {
     let db;
-    let result: HistoryData[] = [];
+    const result: HistoryData[] = [];
     try {
       db = await getDBConnection();
       const data = await getData(db, 'history', columnData);
-      data.forEach(res => {
+      data.forEach((res) => {
         for (let i = 0; i < res.rows.length; i++) {
           result.push(res.rows.item(i));
         }
@@ -538,14 +601,14 @@ export const getHistoryData = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     } finally {
-      await closeDbConnection(db, rejectWithValue);
       dispatch(get6MonthsHistoryData(result));
       dispatch(get3MonthsHistoryData(result));
       dispatch(getMonthHistoryData(result));
       dispatch(getWeekAverageHistoryData(result));
       dispatch(getWeekHistoryData(result));
-    };
-  }
+      await db?.close();
+    }
+  },
 );
 
 export const deleteAllHistoryData = createAsyncThunk(
@@ -556,13 +619,5 @@ export const deleteAllHistoryData = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
-
-const closeDbConnection = async (db: SQLiteDatabase | undefined, rejectWithValue: any) => {
-  try {
-    await db?.close();
-  } catch (error) {
-    return rejectWithValue(error);
-  }
-};

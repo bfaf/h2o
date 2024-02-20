@@ -3,14 +3,7 @@
  */
 
 import React from 'react';
-import {
-  StyleSheet,
-  SafeAreaView,
-  View,
-  Text,
-  Image,
-  Alert,
-} from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, Image, Alert } from 'react-native';
 import { useSelector } from 'react-redux';
 import { daylyConsumption } from '../../stores/redux/slices/daylyConsumptionSlice';
 import { Icon } from 'react-native-paper';
@@ -19,37 +12,38 @@ import { AddLiquid } from './AddLiquid';
 import { RenderMaskedView } from './RenderMaskedView';
 
 export const Home = (): JSX.Element => {
-  const {
-    currentConsumtionMl,
-    desiredDailyConsumption,
-    waterLevel,
-    coffeesConsumed,
-  } = useSelector(daylyConsumption);
-  const {
-    femaleIcon,
-  } = useSelector(settings);
+  const { currentConsumtionMl, desiredDailyConsumption, waterLevel, coffeesConsumed } =
+    useSelector(daylyConsumption);
+  const { femaleIcon } = useSelector(settings);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.dailyLimit}>
         <Text style={styles.dailyLimitText}>Daily limit</Text>
-        <Text style={styles.dailyLimitText} testID='desiredDailyConsumption'>{desiredDailyConsumption} ml</Text>
+        <Text style={styles.dailyLimitText} testID="desiredDailyConsumption">
+          {desiredDailyConsumption} ml
+        </Text>
         <Text style={styles.dailyLimitTextSmall} testID="coffeesIncluded">
-          {coffeesConsumed} <Icon source="coffee" size={14} color="#000" />{' '}
-          included
+          {coffeesConsumed} <Icon source="coffee" size={14} color="#000" /> included
         </Text>
       </View>
       <View style={styles.maskView}>
         <Image
           key="top"
-          source={femaleIcon ? require('../../images/female-200.png') : require('../../images/male-200.png')}
+          source={
+            femaleIcon
+              ? require('../../images/female-200.png')
+              : require('../../images/male-200.png')
+          }
           style={styles.image}
-          testID='personImage'
+          testID="personImage"
         />
         <RenderMaskedView waterLevel={waterLevel} />
       </View>
       <View style={styles.consumedSoFarView}>
-        <Text style={styles.dailyLimitText} testID="currentConsumtionMlSoFar">{currentConsumtionMl} ml</Text>
+        <Text style={styles.dailyLimitText} testID="currentConsumtionMlSoFar">
+          {currentConsumtionMl} ml
+        </Text>
         <Text style={styles.dailyLimitTextSmall}>so far</Text>
       </View>
       <AddLiquid />

@@ -1,18 +1,17 @@
-import MaskedView from "@react-native-masked-view/masked-view";
-import { Platform, Image, StyleSheet } from "react-native";
-import WaterLevelContainer from "./waterLevelContainer";
-import { useSelector } from "react-redux";
-import { settings } from "../../stores/redux/slices/settingSlice";
+import React from 'react';
+import MaskedView from '@react-native-masked-view/masked-view';
+import { Platform, Image, StyleSheet } from 'react-native';
+import WaterLevelContainer from './waterLevelContainer';
+import { useSelector } from 'react-redux';
+import { settings } from '../../stores/redux/slices/settingSlice';
 
-type RenderMaskedViewProps = {
-  waterLevel: number
-};
+interface RenderMaskedViewProps {
+  waterLevel: number;
+}
 
-export const RenderMaskedView = (props: RenderMaskedViewProps) => {
+export const RenderMaskedView = (props: RenderMaskedViewProps): React.JSX.Element => {
   const { waterLevel } = props;
-  const {
-    femaleIcon,
-  } = useSelector(settings);
+  const { femaleIcon } = useSelector(settings);
 
   const isIOS = Platform.OS === 'ios';
   if (isIOS) {
@@ -20,10 +19,15 @@ export const RenderMaskedView = (props: RenderMaskedViewProps) => {
       <MaskedView
         key="maskedView"
         style={styles.maskedView}
-        maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}>
+        maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}
+      >
         <Image
           key="watered"
-          source={femaleIcon ? require('../../images/female-watered-200.png') : require('../../images/male-watered-200.png')}
+          source={
+            femaleIcon
+              ? require('../../images/female-watered-200.png')
+              : require('../../images/male-watered-200.png')
+          }
           style={styles.mask}
         />
       </MaskedView>
@@ -33,10 +37,15 @@ export const RenderMaskedView = (props: RenderMaskedViewProps) => {
       <MaskedView
         key="maskedView"
         style={styles.maskedView}
-        maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}>
+        maskElement={<WaterLevelContainer increse={waterLevel} femaleIcon={femaleIcon} />}
+      >
         <Image
           key="watered"
-          source={femaleIcon ? require('../../images/female-watered-200.png') : require('../../images/male-watered-200.png')}
+          source={
+            femaleIcon
+              ? require('../../images/female-watered-200.png')
+              : require('../../images/male-watered-200.png')
+          }
           style={styles.mask}
         />
       </MaskedView>

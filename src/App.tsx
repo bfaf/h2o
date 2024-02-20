@@ -14,14 +14,14 @@ import AppStack from './app-stack';
 
 const linking = {
   prefixes: [
-    // your linking prefixes 
-    'h2o://'
+    // your linking prefixes
+    'h2o://',
   ],
   config: {
-    // configuration for matching screens with paths 
+    // configuration for matching screens with paths
     screens: {
       Home: 'Home',
-    }
+    },
   },
 };
 
@@ -42,6 +42,6 @@ const App = (): JSX.Element => {
       </StoreProvider>
     </NavigationContainer>
   );
-}
+};
 
 export default App;
