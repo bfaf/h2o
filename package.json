@@ -15,7 +15,7 @@
     "assemble:release": "cd android && gradlew assembleRelease",
     "compile": "tsc",
     "assemble:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
-    "deploy:android": "adb -s EHT0220518000687 install ./android/app/build/outputs/apk/release/app-universal-release.apk",
+    "deploy:android": "adb -s c188209b install ./android/app/build/outputs/apk/release/app-universal-release.apk",
     "clean:android": "cd android && gradlew clean",
     "clean:assemble:deploy:android": "npm run clean:android && npm run assemble:release && npm run deploy:android",
     "format": "prettier --write ./src"

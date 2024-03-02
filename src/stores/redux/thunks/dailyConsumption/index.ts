@@ -227,11 +227,11 @@ export const addWaterConsumedSoFar = createAsyncThunk(
       const newWaterAmount = Number(water) + value;
       await AsyncStorage.setItem(STORE_KEY_WATER_CONSUMED_SO_FAR, '' + newWaterAmount);
 
-      const glasses = (await AsyncStorage.getItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED)) || 0;
-      const newGlassesAmount = Number(glasses) + 1;
-      await AsyncStorage.setItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED, '' + newGlassesAmount);
+      // const glasses = (await AsyncStorage.getItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED)) || 0;
+      // const newGlassesAmount = Number(glasses) + 1;
+      // await AsyncStorage.setItem(STORE_KEY_GLASSES_OF_WATER_CONSUMED, '' + newGlassesAmount);
 
-      return { newWaterAmount, newGlassesAmount };
+      return newWaterAmount;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -242,9 +242,8 @@ export const addWaterLevelSoFar = createAsyncThunk(
   'daylyConsumption/addWaterLevelSoFarValue',
   async (value: number, { rejectWithValue, fulfillWithValue }) => {
     try {
-      console.log('addWaterLevelSoFar', value);
       await AsyncStorage.setItem(STORE_KEY_WATER_LEVEL_SO_FAR, value.toString());
-      return fulfillWithValue(value);
+      return value;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -105,9 +105,9 @@ export const useSchedule = () => {
 export const useResetAndSchedule = () => {
   const dispatch: AppDispatch = useDispatch();
   const schedule = useSchedule();
-  const { currentDate } = useSelector(currentDateSelector);
-
+  
   return useCallback(async () => {
+    const currentDate = await dispatch(fetchCurrentDate()).unwrap();
     const today = getCurrentDate();
     if (shouldReset(currentDate, today)) {
       await dispatch(setCurrentDate());
@@ -121,7 +121,6 @@ export const useResetAndSchedule = () => {
     getCurrentDate,
     setCurrentDate,
     resetDailyData,
-    currentDate,
   ]);
 };
 
@@ -144,10 +143,9 @@ export const useHandleNotificationAction = () => {
           currentConsumtionMl,
         );
       } else {
-        dispatch(addWaterConsumedSoFar(num));
         calculated = calculateIncrease(num, desiredDailyConsumption, currentConsumtionMl);
+        dispatch(addWaterConsumedSoFar(num));
       }
-      console.log(`val: ${val}, num: ${num}, calculated: ${calculated}`);
       dispatch(addWaterLevelSoFar(calculated));
     },
     [dispatch, calculateIncrease, desiredDailyConsumption, currentConsumtionMl, waterPerCoffeeCup],
@@ -241,7 +239,7 @@ export const useInitValues = () => {
         ]);
 
         const settings = await notifee.getNotificationSettings();
-        if (settings.android.alarm == AndroidNotificationSetting.DISABLED) {
+        if (settings.android.alarm === AndroidNotificationSetting.DISABLED) {
           Alert.alert(
             'Restrictions Detected',
             'To ensure notifications are delivered, please adjust your settings to allow permissions for Alarms',

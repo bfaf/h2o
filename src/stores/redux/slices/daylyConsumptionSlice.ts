@@ -127,11 +127,10 @@ const daylyConsumptionSlice = createSlice({
         };
       })
       .addCase(addWaterConsumedSoFar.fulfilled, (state, action) => {
-        const { newWaterAmount, newGlassesAmount } = action.payload;
+        const newWaterAmount = action.payload;
         return {
           ...state,
           currentConsumtionMl: newWaterAmount,
-          glassesOfWaterConsumed: newGlassesAmount,
         };
       })
       .addCase(addWaterConsumedSoFar.rejected, (state, action) => {

@@ -76,13 +76,13 @@ const AppStack = (): React.JSX.Element => {
     }
   }, [settingsErrors, dailyConsumptionErrors]);
 
-  if (dailyDataIsLoading || settingsDataIsLoading) {
-    return (
-      <View style={{ flex: 1, marginVertical: 'auto', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  // if (dailyDataIsLoading || settingsDataIsLoading) {
+  //   return (
+  //     <View style={{ flex: 1, marginVertical: 'auto', justifyContent: 'center' }}>
+  //       <ActivityIndicator size="large" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <Stack.Navigator
